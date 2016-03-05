@@ -522,7 +522,7 @@ public class ConnectionQueryServicesImpl extends DelegateQueryServices implement
          * all region locations from the HTable doesn't.
          */
         int retryCount = 0, maxRetryCount = 1;
-        boolean reload =true;
+        boolean reload =false;
         while (true) {
             try {
                 // We could surface the package projected HConnectionImplementation.getNumberOfCachedRegionLocations

@@ -728,7 +728,7 @@ public class FromCompiler {
                     TableRef tableRef = iterator.next();
                     try {
                         PColumn column = tableRef.getTable().getColumn(colName);
-//                        if (theTableRef != null) { throw new AmbiguousColumnException(colName); }
+                        if (theTableRef != null) { throw new AmbiguousColumnException(colName); }
                         theTableRef = tableRef;
                         theColumnPosition = column.getPosition();
                     } catch (ColumnNotFoundException e) {
