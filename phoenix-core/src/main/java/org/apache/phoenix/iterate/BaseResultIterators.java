@@ -133,19 +133,20 @@ public abstract class BaseResultIterators extends ExplainTable implements Result
     }
     
     private boolean useStats() {
-        Scan scan = context.getScan();
-        boolean isPointLookup = context.getScanRanges().isPointLookup();
-        /*
-         *  Don't use guide posts if:
-         *  1) We're doing a point lookup, as HBase is fast enough at those
-         *     to not need them to be further parallelized. TODO: perf test to verify
-         *  2) We're collecting stats, as in this case we need to scan entire
-         *     regions worth of data to track where to put the guide posts.
-         */
-        if (isPointLookup || ScanUtil.isAnalyzeTable(scan)) {
-            return false;
-        }
-        return true;
+//        Scan scan = context.getScan();
+//        boolean isPointLookup = context.getScanRanges().isPointLookup();
+//        /*
+//         *  Don't use guide posts if:
+//         *  1) We're doing a point lookup, as HBase is fast enough at those
+//         *     to not need them to be further parallelized. TODO: perf test to verify
+//         *  2) We're collecting stats, as in this case we need to scan entire
+//         *     regions worth of data to track where to put the guide posts.
+//         */
+//        if (isPointLookup || ScanUtil.isAnalyzeTable(scan)) {
+//            return false;
+//        }
+//        return true;
+        return false;
     }
     
     private static void initializeScan(QueryPlan plan, Integer perScanLimit) {
