@@ -118,7 +118,7 @@ public class MinMaxAggregateFunctionIT extends BaseHBaseManagedTimeIT {
 
             RoaringBitmap rst = new RoaringBitmap();
             rst.deserialize(new DataInputStream(new ByteArrayInputStream(rs.getBytes(1))));
-            assertEquals(rst.getCardinality(), 1);
+            assertEquals(rst.getCardinality(), 2);
         } finally {
             conn.close();
         }
