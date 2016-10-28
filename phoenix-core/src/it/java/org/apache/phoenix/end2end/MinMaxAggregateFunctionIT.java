@@ -14,12 +14,13 @@ import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.sql.*;
 import java.util.Properties;
 
+import io.growing.roaringbitmap.RoaringBitmap;
+import org.apache.phoenix.util.PhoenixRuntime;
 import org.apache.phoenix.util.PropertiesUtil;
 import org.junit.Test;
 
@@ -82,5 +83,45 @@ public class MinMaxAggregateFunctionIT extends BaseHBaseManagedTimeIT {
         } finally {
             conn.close();
         }
+    }
+
+    @Test
+    public void testBitMap() throws Exception {
+
+        Properties props = PropertiesUtil.deepCopy(TEST_PROPERTIES);
+        Connection conn = DriverManager.getConnection(getUrl(), props);
+        conn.setAutoCommit(false);
+        String create = "CREATE TABLE test_bm (PK INTEGER PRIMARY KEY, c1 VARBINARY)";
+        String upsert = "upsert into test_bm values (?,?)";
+        String query = "select bitmap_merge(c1) from test_bm";
+//        String query = "select bitmap_and(b1.c1, b2.c1) from test_bm b1 join test_bm b2 on b1.pk=b2.pk";
+        try {
+            Statement statement = conn.createStatement();
+            statement.execute(create);
+            conn.commit();
+            for(int i=0; i<3; i++) {
+                PreparedStatement stmt = conn.prepareStatement(upsert);
+                stmt.setInt(1, i);
+                if (i == 2) {
+                    stmt.setBytes(2, null);
+                } else {
+                    RoaringBitmap rb = new RoaringBitmap();
+                    rb.add(i);
+                    stmt.setBytes(2, rb.getBytes());
+                }
+                stmt.execute();
+                conn.commit();
+            }
+            Statement stmtf = conn.createStatement();
+            ResultSet rs = stmtf.executeQuery(query);
+            assertTrue(rs.next());
+
+            RoaringBitmap rst = new RoaringBitmap();
+            rst.deserialize(new DataInputStream(new ByteArrayInputStream(rs.getBytes(1))));
+            assertEquals(rst.getCardinality(), 1);
+        } finally {
+            conn.close();
+        }
+
     }
 }

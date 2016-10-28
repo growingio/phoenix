@@ -44,6 +44,7 @@ import org.apache.phoenix.expression.function.CeilYearExpression;
 import org.apache.phoenix.expression.function.CoalesceFunction;
 import org.apache.phoenix.expression.function.ConvertTimezoneFunction;
 import org.apache.phoenix.expression.function.CountAggregateFunction;
+import org.apache.phoenix.expression.function.BitMapMergeFunction;
 import org.apache.phoenix.expression.function.DayOfMonthFunction;
 import org.apache.phoenix.expression.function.DecodeFunction;
 import org.apache.phoenix.expression.function.DistinctCountAggregateFunction;
@@ -102,6 +103,9 @@ import org.apache.phoenix.expression.function.SQLViewTypeFunction;
 import org.apache.phoenix.expression.function.SecondFunction;
 import org.apache.phoenix.expression.function.SetBitFunction;
 import org.apache.phoenix.expression.function.SetByteFunction;
+import org.apache.phoenix.expression.function.BitMapAndFunction;
+import org.apache.phoenix.expression.function.BitMapOrFunction;
+import org.apache.phoenix.expression.function.BitMapAndNotFunction;
 import org.apache.phoenix.expression.function.SignFunction;
 import org.apache.phoenix.expression.function.SqlTypeNameFunction;
 import org.apache.phoenix.expression.function.SqrtFunction;
@@ -166,6 +170,7 @@ public enum ExpressionType {
     ComparisonExpression(ComparisonExpression.class),
     CountAggregateFunction(CountAggregateFunction.class),
     SumAggregateFunction(SumAggregateFunction.class),
+    BitMapMergeFunction(BitMapMergeFunction.class),
     MinAggregateFunction(MinAggregateFunction.class),
     MaxAggregateFunction(MaxAggregateFunction.class),
     StringBasedLikeExpression(StringBasedLikeExpression.class),
@@ -271,6 +276,9 @@ public enum ExpressionType {
     SetByteFunction(SetByteFunction.class),
     GetBitFunction(GetBitFunction.class),
     SetBitFunction(SetBitFunction.class),
+    BitMapAndFunction(BitMapAndFunction.class),
+    BitMapOrFunction(BitMapOrFunction.class),
+    BitMapAndNotFunction(BitMapAndNotFunction.class),
     OctetLengthFunction(OctetLengthFunction.class),
     RoundWeekExpression(RoundWeekExpression.class),
     RoundMonthExpression(RoundMonthExpression.class),
