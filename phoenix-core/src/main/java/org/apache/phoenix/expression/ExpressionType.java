@@ -106,6 +106,7 @@ import org.apache.phoenix.expression.function.SetByteFunction;
 import org.apache.phoenix.expression.function.BitMapAndFunction;
 import org.apache.phoenix.expression.function.BitMapOrFunction;
 import org.apache.phoenix.expression.function.BitMapAndNotFunction;
+import org.apache.phoenix.expression.function.BitMapCountFunction;
 import org.apache.phoenix.expression.function.SignFunction;
 import org.apache.phoenix.expression.function.SqlTypeNameFunction;
 import org.apache.phoenix.expression.function.SqrtFunction;
@@ -279,6 +280,7 @@ public enum ExpressionType {
     BitMapAndFunction(BitMapAndFunction.class),
     BitMapOrFunction(BitMapOrFunction.class),
     BitMapAndNotFunction(BitMapAndNotFunction.class),
+    BitMapCountFunction(BitMapCountFunction.class),
     OctetLengthFunction(OctetLengthFunction.class),
     RoundWeekExpression(RoundWeekExpression.class),
     RoundMonthExpression(RoundMonthExpression.class),
