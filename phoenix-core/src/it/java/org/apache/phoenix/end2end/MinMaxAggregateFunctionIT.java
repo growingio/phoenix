@@ -93,8 +93,8 @@ public class MinMaxAggregateFunctionIT extends BaseHBaseManagedTimeIT {
         conn.setAutoCommit(false);
         String create = "CREATE TABLE test_bm (PK INTEGER PRIMARY KEY, c1 VARBINARY)";
         String upsert = "upsert into test_bm values (?,?)";
-        String query = "select bitmap_merge(c1) from test_bm";
-//        String query = "select bitmap_and(b1.c1, b2.c1) from test_bm b1 join test_bm b2 on b1.pk=b2.pk";
+//        String query = "select bitmap_merge(c1) from test_bm";
+        String query = "select bitmap_count(bitmap_and(b1.c1, b2.c1)) from test_bm b1 join test_bm b2 on b1.pk+1=b2.pk";
         try {
             Statement statement = conn.createStatement();
             statement.execute(create);
@@ -115,10 +115,9 @@ public class MinMaxAggregateFunctionIT extends BaseHBaseManagedTimeIT {
             Statement stmtf = conn.createStatement();
             ResultSet rs = stmtf.executeQuery(query);
             assertTrue(rs.next());
-
-            RoaringBitmap rst = new RoaringBitmap();
-            rst.deserialize(new DataInputStream(new ByteArrayInputStream(rs.getBytes(1))));
-            assertEquals(rst.getCardinality(), 2);
+//            RoaringBitmap rst = new RoaringBitmap();
+//            rst.deserialize(new DataInputStream(new ByteArrayInputStream(rs.getBytes(1))));
+            assertEquals(rs.getInt(1), 0);
         } finally {
             conn.close();
         }
