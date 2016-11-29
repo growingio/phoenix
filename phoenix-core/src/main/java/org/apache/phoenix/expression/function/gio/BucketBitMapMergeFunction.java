@@ -15,69 +15,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.phoenix.expression.function;
+package org.apache.phoenix.expression.function.gio;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.phoenix.expression.Expression;
 import org.apache.phoenix.expression.LiteralExpression;
 import org.apache.phoenix.expression.aggregator.Aggregator;
-import org.apache.phoenix.expression.aggregator.BitMapMergeAggregator;
+import org.apache.phoenix.expression.aggregator.gio.BucketBitMapMergeAggregator;
+import org.apache.phoenix.expression.function.CountAggregateFunction;
+import org.apache.phoenix.expression.function.DelegateConstantToCountAggregateFunction;
 import org.apache.phoenix.parse.FunctionParseNode.Argument;
 import org.apache.phoenix.parse.FunctionParseNode.BuiltInFunction;
-import org.apache.phoenix.parse.BitMapMergeAggregateParseNode;
+import org.apache.phoenix.parse.gio.BucketBitMapMergeAggregateParseNode;
 import org.apache.phoenix.schema.SortOrder;
 import org.apache.phoenix.schema.tuple.Tuple;
-import org.apache.phoenix.schema.types.*;
+import org.apache.phoenix.schema.types.PDataType;
+import org.apache.phoenix.schema.types.PVarbinary;
 
 import java.util.List;
 
 
 /**
- * 
  * Built-in function for BITMAP merge function.
  *
- * 
  * @since 0.1
  */
-@BuiltInFunction(name= BitMapMergeFunction.NAME, nodeClass=BitMapMergeAggregateParseNode.class, args= {@Argument(allowedTypes={PVarbinary.class})} )
-public class BitMapMergeFunction extends DelegateConstantToCountAggregateFunction {
-    public static final String NAME = "BITMAP_MERGE";
+@BuiltInFunction(name = BucketBitMapMergeFunction.NAME,
+        nodeClass = BucketBitMapMergeAggregateParseNode.class,
+        args = {@Argument(allowedTypes = {PVarbinary.class})})
+public class BucketBitMapMergeFunction extends DelegateConstantToCountAggregateFunction {
+    public static final String NAME = "BUCKET_BITMAP_MERGE";
 
-    public BitMapMergeFunction() {
+    public BucketBitMapMergeFunction() {
     }
 
     // TODO: remove when not required at built-in func register time
-    public BitMapMergeFunction(List<Expression> childExpressions){
+    public BucketBitMapMergeFunction(List<Expression> childExpressions) {
         super(childExpressions, null);
     }
 
-    public BitMapMergeFunction(List<Expression> childExpressions, CountAggregateFunction delegate){
+    public BucketBitMapMergeFunction(List<Expression> childExpressions,
+                                     CountAggregateFunction delegate) {
         super(childExpressions, delegate);
     }
-    
-    private Aggregator newAggregator(final PDataType type, SortOrder sortOrder, ImmutableBytesWritable ptr) {
-        assert(type == PVarbinary.INSTANCE);
-        return new BitMapMergeAggregator(sortOrder, ptr);
+
+    private Aggregator newAggregator(final PDataType type, SortOrder sortOrder,
+                                     ImmutableBytesWritable ptr) {
+        assert (type == PVarbinary.INSTANCE);
+        return new BucketBitMapMergeAggregator(sortOrder, ptr);
     }
 
     @Override
     public Aggregator newClientAggregator() {
         return newAggregator(getDataType(), SortOrder.getDefault(), null);
     }
-    
+
     @Override
     public Aggregator newServerAggregator(Configuration conf) {
         Expression child = getAggregatorExpression();
         return newAggregator(child.getDataType(), child.getSortOrder(), null);
     }
-    
+
     @Override
     public Aggregator newServerAggregator(Configuration conf, ImmutableBytesWritable ptr) {
         Expression child = getAggregatorExpression();
         return newAggregator(child.getDataType(), child.getSortOrder(), ptr);
     }
-    
+
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         if (!super.evaluate(tuple, ptr)) {
@@ -85,7 +90,7 @@ public class BitMapMergeFunction extends DelegateConstantToCountAggregateFunctio
         }
         if (isConstantExpression()) {
             PDataType type = getDataType();
-            Object constantValue = ((LiteralExpression)children.get(0)).getValue();
+            Object constantValue = ((LiteralExpression) children.get(0)).getValue();
             ptr.set(type.toBytes(constantValue));
         }
         return true;

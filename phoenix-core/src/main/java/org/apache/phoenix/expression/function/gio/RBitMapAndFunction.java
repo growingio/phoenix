@@ -15,11 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.phoenix.expression.function;
+package org.apache.phoenix.expression.function.gio;
 
-import io.growing.roaringbitmap.RoaringBitmap;
+import com.google.common.collect.Lists;
+import io.growing.bitmap.FastAggregation;
+import io.growing.bitmap.RoaringBitmap;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.phoenix.expression.Expression;
+import org.apache.phoenix.expression.function.ScalarFunction;
 import org.apache.phoenix.parse.FunctionParseNode.Argument;
 import org.apache.phoenix.parse.FunctionParseNode.BuiltInFunction;
 import org.apache.phoenix.schema.tuple.Tuple;
@@ -31,17 +34,17 @@ import java.io.DataInputStream;
 import java.sql.SQLException;
 import java.util.List;
 
-@BuiltInFunction(name = BitMapAndNotFunction.NAME,
-        args = { @Argument(allowedTypes = { PVarbinary.class }),
-                @Argument(allowedTypes = { PVarbinary.class }) })
-public class BitMapAndNotFunction extends ScalarFunction {
+@BuiltInFunction(name = RBitMapAndFunction.NAME,
+        args = {@Argument(allowedTypes = {PVarbinary.class}),
+                @Argument(allowedTypes = {PVarbinary.class})})
+public class RBitMapAndFunction extends ScalarFunction {
 
-    public static final String NAME = "BITMAP_ANDNOT";
+    public static final String NAME = "RBITMAP_AND";
 
-    public BitMapAndNotFunction() {
+    public RBitMapAndFunction() {
     }
 
-    public BitMapAndNotFunction(List<Expression> children) throws SQLException {
+    public RBitMapAndFunction(List<Expression> children) throws SQLException {
         super(children);
     }
 
@@ -52,18 +55,18 @@ public class BitMapAndNotFunction extends ScalarFunction {
 
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
-
-        RoaringBitmap left = new RoaringBitmap();
-        RoaringBitmap right = new RoaringBitmap();
-        try {
-            if (!children.get(0).evaluate(tuple, ptr)) return false;
-            left.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
-            if (!children.get(1).evaluate(tuple, ptr)) return false;
-            right.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
-        } catch (Exception e) {
+        List values = Lists.newArrayListWithExpectedSize(children.size());
+        for (int i = 0; i < children.size(); i++) {
+            Expression dataExpr = children.get(i);
+            if (!dataExpr.evaluate(tuple, ptr)) return false;
+            RoaringBitmap value = new RoaringBitmap();
+            try {
+                value.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
+            } catch (Exception e) {
+            }
+            values.add(i, value);
         }
-        left.andNot(right);
-        ptr.set(left.getBytes());
+        ptr.set(FastAggregation.and(values.iterator()).getBytes());
         return true;
     }
 

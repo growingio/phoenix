@@ -15,34 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.phoenix.expression.function;
+package org.apache.phoenix.expression.function.gio;
 
-import com.google.common.collect.Lists;
-import io.growing.roaringbitmap.FastAggregation;
-import io.growing.roaringbitmap.RoaringBitmap;
+import io.growing.bitmap.RoaringBitmap;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.phoenix.expression.Expression;
+import org.apache.phoenix.expression.function.ScalarFunction;
 import org.apache.phoenix.parse.FunctionParseNode.Argument;
 import org.apache.phoenix.parse.FunctionParseNode.BuiltInFunction;
 import org.apache.phoenix.schema.tuple.Tuple;
-import org.apache.phoenix.schema.types.*;
+import org.apache.phoenix.schema.types.PDataType;
+import org.apache.phoenix.schema.types.PVarbinary;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@BuiltInFunction(name = BitMapAndFunction.NAME,
-        args = { @Argument(allowedTypes = { PVarbinary.class }),
-                @Argument(allowedTypes = { PVarbinary.class }) })
-public class BitMapAndFunction extends ScalarFunction {
+@BuiltInFunction(name = RBitMapAndNotFunction.NAME,
+        args = {@Argument(allowedTypes = {PVarbinary.class}),
+                @Argument(allowedTypes = {PVarbinary.class})})
+public class RBitMapAndNotFunction extends ScalarFunction {
 
-    public static final String NAME = "BITMAP_AND";
+    public static final String NAME = "RBITMAP_ANDNOT";
 
-    public BitMapAndFunction() {
+    public RBitMapAndNotFunction() {
     }
 
-    public BitMapAndFunction(List<Expression> children) throws SQLException {
+    public RBitMapAndNotFunction(List<Expression> children) throws SQLException {
         super(children);
     }
 
@@ -53,20 +54,20 @@ public class BitMapAndFunction extends ScalarFunction {
 
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
-
-        List values = Lists.newArrayListWithExpectedSize(children.size());
-        for (int i = 0; i< children.size(); i++) {
-            Expression dataExpr = children.get(i);
-            if (!dataExpr.evaluate(tuple, ptr)) return false;
-            RoaringBitmap value = new RoaringBitmap();
-            try {
-                value.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
-            } catch (Exception e) {
-            }
-            values.add(i, value);
+        try {
+            RoaringBitmap left = new RoaringBitmap();
+            RoaringBitmap right = new RoaringBitmap();
+            if (!children.get(0).evaluate(tuple, ptr)) return false;
+            left.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
+            if (!children.get(1).evaluate(tuple, ptr)) return false;
+            right.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
+            left.andNot(right);
+            ptr.set(left.getBytes());
+            return true;
+        } catch (IOException e) {
+            throw new RuntimeException("Unexpected exception", e);
         }
-        ptr.set(FastAggregation.and(values.iterator()).getBytes());
-        return true;
+
     }
 
     @Override

@@ -15,35 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.phoenix.expression.function;
+package org.apache.phoenix.expression.function.gio;
 
-import com.google.common.collect.Lists;
-import io.growing.roaringbitmap.FastAggregation;
-import io.growing.roaringbitmap.RoaringBitmap;
+import io.growing.bitmap.BucketBitMap;
+import io.growing.bitmap.CBitMap;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.phoenix.expression.Expression;
+import org.apache.phoenix.expression.function.ScalarFunction;
 import org.apache.phoenix.parse.FunctionParseNode.Argument;
 import org.apache.phoenix.parse.FunctionParseNode.BuiltInFunction;
 import org.apache.phoenix.schema.tuple.Tuple;
 import org.apache.phoenix.schema.types.PDataType;
-import org.apache.phoenix.schema.types.PInteger;
 import org.apache.phoenix.schema.types.PVarbinary;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@BuiltInFunction(name = BitMapCountFunction.NAME,
-        args = { @Argument(allowedTypes = { PVarbinary.class }) })
-public class BitMapCountFunction extends ScalarFunction {
+@BuiltInFunction(name = CBitMapAndNotFunction.NAME,
+        args = {@Argument(allowedTypes = {PVarbinary.class}),
+                @Argument(allowedTypes = {PVarbinary.class})})
+public class CBitMapAndNotFunction extends ScalarFunction {
 
-    public static final String NAME = "BITMAP_COUNT";
+    public static final String NAME = "CBITMAP_ANDNOT";
 
-    public BitMapCountFunction() {
+    public CBitMapAndNotFunction() {
     }
 
-    public BitMapCountFunction(List<Expression> children) throws SQLException {
+    public CBitMapAndNotFunction(List<Expression> children) throws SQLException {
         super(children);
     }
 
@@ -54,21 +53,21 @@ public class BitMapCountFunction extends ScalarFunction {
 
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
-
-        RoaringBitmap bitmap = new RoaringBitmap();
         try {
             if (!children.get(0).evaluate(tuple, ptr)) return false;
-            bitmap.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
-        } catch (Exception e) {
+            CBitMap left = new CBitMap(ptr.copyBytes());
+            if (!children.get(1).evaluate(tuple, ptr)) return false;
+            BucketBitMap right = new BucketBitMap(ptr.copyBytes());
+            left.andNot(right);
+            ptr.set(left.getBytes());
+            return true;
+        } catch (ClassNotFoundException | IOException e) {
+            throw new RuntimeException("Unexpected exception", e);
         }
-        byte[] lengthBuf = new byte[PInteger.INSTANCE.getByteSize()];
-        PInteger.INSTANCE.getCodec().encodeInt(bitmap.getCardinality(), lengthBuf, 0);
-        ptr.set(lengthBuf);
-        return true;
     }
 
     @Override
     public PDataType getDataType() {
-        return PInteger.INSTANCE;
+        return children.get(0).getDataType();
     }
 }

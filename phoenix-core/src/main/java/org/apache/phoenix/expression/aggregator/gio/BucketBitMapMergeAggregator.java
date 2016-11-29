@@ -15,33 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.phoenix.expression.aggregator;
+package org.apache.phoenix.expression.aggregator.gio;
 
-import io.growing.roaringbitmap.RoaringBitmap;
+import io.growing.bitmap.BucketBitMap;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
+import org.apache.phoenix.expression.aggregator.BaseAggregator;
 import org.apache.phoenix.schema.SortOrder;
 import org.apache.phoenix.schema.tuple.Tuple;
 import org.apache.phoenix.schema.types.PDataType;
-import org.apache.phoenix.schema.types.PDecimal;
 import org.apache.phoenix.schema.types.PVarbinary;
 import org.apache.phoenix.util.SizedUtil;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.math.BigDecimal;
+import java.io.IOException;
 
 
 /**
- * 
  * Aggregator that merge bitmap values
  *
- * 
- * @since 0.1
+ * @since GIO-1.2
  */
-public class BitMapMergeAggregator extends BaseAggregator {
-    private RoaringBitmap rb = new RoaringBitmap();
+public class BucketBitMapMergeAggregator extends BaseAggregator {
+    private BucketBitMap bucketBm = new BucketBitMap();
 
-    public BitMapMergeAggregator(SortOrder sortOrder, ImmutableBytesWritable ptr) {
+    public BucketBitMapMergeAggregator(SortOrder sortOrder, ImmutableBytesWritable ptr) {
         super(sortOrder);
         if (ptr != null) {
             mergeValue(ptr);
@@ -49,47 +45,55 @@ public class BitMapMergeAggregator extends BaseAggregator {
     }
 
     private void mergeValue(ImmutableBytesWritable ptr) {
-        RoaringBitmap value = new RoaringBitmap();
         try {
-            value.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
-        } catch (Exception e) {
+            BucketBitMap value = new BucketBitMap(ptr.copyBytes());
+            bucketBm.or(value);
+        } catch (ClassNotFoundException | IOException e) {
+            throw new RuntimeException("Unexpected exception", e);
         }
-        rb.or(value);
     }
 
     @Override
     public void aggregate(Tuple tuple, ImmutableBytesWritable ptr) {
         mergeValue(ptr);
     }
-    
+
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
-//        if (rb.isEmpty()) {
+//        if (bucketBm.isEmpty()) {
 //            return false;
 //        }
-        byte[] bmBytes = rb.getBytes();
-        ptr.set(bmBytes, 0, bmBytes.length);
+        try {
+            byte[] bmBytes = bucketBm.getBytes();
+            ptr.set(bmBytes, 0, bmBytes.length);
+        } catch (IOException e) {
+            throw new RuntimeException("Unexpected exception", e);
+        }
         return true;
     }
-    
+
     @Override
     public final PDataType getDataType() {
         return PVarbinary.INSTANCE;
     }
-    
+
     @Override
     public void reset() {
-        rb = new RoaringBitmap();
+        bucketBm = new BucketBitMap();
         super.reset();
     }
 
     @Override
     public String toString() {
-        return "BITMAP MERGE [cardinality=" + rb.getCardinality() + "]";
+        return "BITMAP MERGE [cardinality=" + bucketBm.getCount() + "]";
     }
 
     @Override
     public int getSize() {
-        return super.getSize() + rb.getSizeInBytes() + SizedUtil.ARRAY_SIZE;
+        try {
+            return super.getSize() + bucketBm.getSizeInBytes() + SizedUtil.ARRAY_SIZE;
+        } catch (IOException e) {
+            throw new RuntimeException("Unexpected exception", e);
+        }
     }
 }

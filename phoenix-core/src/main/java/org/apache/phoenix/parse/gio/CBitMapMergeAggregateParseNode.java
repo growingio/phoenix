@@ -15,25 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.phoenix.parse;
+package org.apache.phoenix.parse.gio;
 
 import org.apache.phoenix.compile.StatementContext;
 import org.apache.phoenix.expression.Expression;
 import org.apache.phoenix.expression.function.FunctionExpression;
-import org.apache.phoenix.expression.function.BitMapMergeFunction;
+import org.apache.phoenix.expression.function.gio.CBitMapMergeFunction;
+import org.apache.phoenix.parse.DelegateConstantToCountParseNode;
+import org.apache.phoenix.parse.ParseNode;
 
 import java.sql.SQLException;
 import java.util.List;
 
 
-public class BitMapMergeAggregateParseNode extends DelegateConstantToCountParseNode {
+public class CBitMapMergeAggregateParseNode extends DelegateConstantToCountParseNode {
 
-    public BitMapMergeAggregateParseNode(String name, List<ParseNode> children, BuiltInFunctionInfo info) {
+    public CBitMapMergeAggregateParseNode(String name, List<ParseNode> children,
+                                          BuiltInFunctionInfo info) {
         super(name, children, info);
     }
-    
+
     @Override
-    public FunctionExpression create(List<Expression> children, StatementContext context) throws SQLException {
-        return new BitMapMergeFunction(children, getDelegateFunction(children,context));
+    public FunctionExpression create(List<Expression> children, StatementContext context) throws
+            SQLException {
+        return new CBitMapMergeFunction(children, getDelegateFunction(children, context));
     }
 }
