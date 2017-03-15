@@ -53,10 +53,13 @@ public class BucketBitMapCountFunction extends ScalarFunction {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            if (!children.get(0).evaluate(tuple, ptr)) return false;
-            BucketBitMap bucketBm = new BucketBitMap(ptr.copyBytes());
             byte[] lengthBuf = new byte[PLong.INSTANCE.getByteSize()];
-            PLong.INSTANCE.getCodec().encodeLong(bucketBm.getCount(), lengthBuf, 0);
+            if (children.get(0).evaluate(tuple, ptr)) {
+                BucketBitMap bucketBm = new BucketBitMap(ptr.copyBytes());
+                PLong.INSTANCE.getCodec().encodeLong(bucketBm.getCount(), lengthBuf, 0);
+            } else {
+                PLong.INSTANCE.getCodec().encodeLong(0L, lengthBuf, 0);
+            }
             ptr.set(lengthBuf);
             return true;
         } catch (ClassNotFoundException | IOException e) {
