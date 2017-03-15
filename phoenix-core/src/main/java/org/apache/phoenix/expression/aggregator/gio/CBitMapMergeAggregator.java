@@ -48,7 +48,6 @@ public class CBitMapMergeAggregator extends BaseAggregator {
         try {
             CBitMap value = new CBitMap(ptr.copyBytes());
             cbm.or(value);
-            System.out.println();
         } catch (Exception e) {
             throw new RuntimeException("Unexpected exception", e);
         }
