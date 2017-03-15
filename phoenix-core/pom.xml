@@ -226,7 +226,7 @@
     <dependency>
       <groupId>io.growing</groupId>
       <artifactId>bitmap</artifactId>
-      <version>0.6.26-GIO1.4</version>
+      <version>0.6.26-GIO1.7</version>
       <exclusions>
         <exclusion>
           <groupId>org.scala-lang</groupId>
