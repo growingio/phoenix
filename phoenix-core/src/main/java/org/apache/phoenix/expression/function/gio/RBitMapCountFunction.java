@@ -55,11 +55,14 @@ public class RBitMapCountFunction extends ScalarFunction {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            RoaringBitmap bitmap = new RoaringBitmap();
-            if (!children.get(0).evaluate(tuple, ptr)) return false;
-            bitmap.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
             byte[] lengthBuf = new byte[PLong.INSTANCE.getByteSize()];
-            PLong.INSTANCE.getCodec().encodeLong(bitmap.getLongCardinality(), lengthBuf, 0);
+            RoaringBitmap bitmap = new RoaringBitmap();
+            if (children.get(0).evaluate(tuple, ptr)) {
+                bitmap.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
+                PLong.INSTANCE.getCodec().encodeLong(bitmap.getLongCardinality(), lengthBuf, 0);
+            } else {
+                PLong.INSTANCE.getCodec().encodeLong(0L, lengthBuf, 0);
+            }
             ptr.set(lengthBuf);
             return true;
         } catch (IOException e) {

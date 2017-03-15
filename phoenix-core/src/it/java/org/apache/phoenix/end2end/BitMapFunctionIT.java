@@ -26,7 +26,7 @@ import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
+public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
 
     private Connection conn = null;
 
@@ -52,8 +52,10 @@ public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
         // create table
         String create1 = "CREATE TABLE test_rbm1 (id INTEGER PRIMARY KEY, bm VARBINARY)";
         String create2 = "CREATE TABLE test_rbm2 (id INTEGER PRIMARY KEY, bm VARBINARY)";
+        String create3 = "CREATE TABLE test_rbm3 (id INTEGER PRIMARY KEY, bm VARBINARY)";
         stmt.addBatch(create1);
         stmt.addBatch(create2);
+        stmt.addBatch(create3);
         stmt.executeBatch();
         stmt.close();
 
@@ -80,6 +82,14 @@ public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
         prepareStmt2.executeBatch();
         prepareStmt2.close();
 
+        String upsert3 = "upsert into test_rbm3 values (?,?)";
+        PreparedStatement prepareStmt3 = conn.prepareStatement(upsert3);
+        prepareStmt3.setInt(1, 1);
+        prepareStmt3.setBytes(2, null);
+        prepareStmt3.addBatch();
+        prepareStmt3.executeBatch();
+        prepareStmt3.close();
+
         conn.commit();
     }
 
@@ -89,8 +99,10 @@ public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
         // create table
         String create1 = "CREATE TABLE test_bucket_bm1 (id INTEGER PRIMARY KEY, bm VARBINARY)";
         String create2 = "CREATE TABLE test_bucket_bm2 (id INTEGER PRIMARY KEY, bm VARBINARY)";
+        String create3 = "CREATE TABLE test_bucket_bm3 (id INTEGER PRIMARY KEY, bm VARBINARY)";
         stmt.addBatch(create1);
         stmt.addBatch(create2);
+        stmt.addBatch(create3);
         stmt.executeBatch();
         stmt.close();
 
@@ -117,6 +129,14 @@ public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
         prepareStmt2.executeBatch();
         prepareStmt2.close();
 
+        String upsert3 = "upsert into test_bucket_bm3 values (?,?)";
+        PreparedStatement prepareStmt3 = conn.prepareStatement(upsert3);
+        prepareStmt3.setInt(1, 1);
+        prepareStmt3.setBytes(2, null);
+        prepareStmt3.addBatch();
+        prepareStmt3.executeBatch();
+        prepareStmt3.close();
+
         conn.commit();
     }
 
@@ -126,8 +146,10 @@ public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
         // create table
         String create1 = "CREATE TABLE test_cbm1 (id INTEGER PRIMARY KEY, bm VARBINARY)";
         String create2 = "CREATE TABLE test_cbm2 (id INTEGER PRIMARY KEY, bm VARBINARY)";
+        String create3 = "CREATE TABLE test_cbm3 (id INTEGER PRIMARY KEY, bm VARBINARY)";
         stmt.addBatch(create1);
         stmt.addBatch(create2);
+        stmt.addBatch(create3);
         stmt.executeBatch();
         stmt.close();
 
@@ -153,6 +175,14 @@ public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
         prepareStmt2.addBatch();
         prepareStmt2.executeBatch();
         prepareStmt2.close();
+
+        String upsert3 = "upsert into test_cbm3 values (?,?)";
+        PreparedStatement prepareStmt3 = conn.prepareStatement(upsert3);
+        prepareStmt3.setInt(1, 1);
+        prepareStmt3.setBytes(2, null);
+        prepareStmt3.addBatch();
+        prepareStmt3.executeBatch();
+        prepareStmt3.close();
 
         conn.commit();
     }
@@ -208,6 +238,15 @@ public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
         assertEquals(3, rs.getLong(1));
     }
 
+    @Test
+    public void testRBitMapCount() throws SQLException {
+        String query = "select rbitmap_count(bm) from test_rbm3";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        assertTrue(rs.next());
+        assertEquals(0, rs.getLong(1));
+    }
+
     ///////////////////////////////////////////
     // BucketBitMap tests                    //
     ///////////////////////////////////////////
@@ -259,6 +298,15 @@ public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
         assertEquals(3, rs.getLong(1));
     }
 
+    @Test
+    public void testBucketBitMapCount() throws SQLException {
+        String query = "select bucket_bitmap_count(bm) from test_bucket_bm3";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        assertTrue(rs.next());
+        assertEquals(0, rs.getLong(1));
+    }
+
     ///////////////////////////////////////////
     // CBitMap tests                         //
     ///////////////////////////////////////////
@@ -308,5 +356,14 @@ public class BitMapMergeFunctionIT extends BaseHBaseManagedTimeIT {
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
         assertEquals(10, rs.getLong(1));
+    }
+
+    @Test
+    public void testCBitMapCount() throws SQLException {
+        String query = "select cbitmap_count(bm) from test_cbm3";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        assertTrue(rs.next());
+        assertEquals(0, rs.getLong(1));
     }
 }
