@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.apache.phoenix</groupId>
     <artifactId>phoenix</artifactId>
-    <version>GIO-2.1.0-4.7.0</version>
+    <version>4.7.0-GIO2.0.0</version>
   </parent>
   <artifactId>phoenix-core</artifactId>
   <name>Phoenix Core</name>
@@ -226,7 +226,7 @@
     <dependency>
       <groupId>io.growing</groupId>
       <artifactId>bitmap</artifactId>
-      <version>0.6.26-GIO1.7.4</version>
+      <version>0.6.26-GIO1.7.8</version>
       <exclusions>
         <exclusion>
           <groupId>org.scala-lang</groupId>
