@@ -20,6 +20,8 @@ import java.sql.*;
 import java.util.Properties;
 
 import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class StringAggMergeFunctionIT extends BaseHBaseManagedTimeIT {
 
@@ -68,6 +70,16 @@ public class StringAggMergeFunctionIT extends BaseHBaseManagedTimeIT {
         prepareStmt2.executeBatch();
         prepareStmt2.close();
 
+
+        String upsert3 = "upsert into test_s1 values (?,?,?)";
+        PreparedStatement prepareStmt3 = conn.prepareStatement(upsert3);
+        prepareStmt3.setInt(1, 3);
+        prepareStmt3.setString(2, "a");
+        prepareStmt3.setString(3, "abc");
+        prepareStmt3.addBatch();
+        prepareStmt3.executeBatch();
+        prepareStmt3.close();
+
         conn.commit();
     }
 
@@ -83,11 +95,10 @@ public class StringAggMergeFunctionIT extends BaseHBaseManagedTimeIT {
 
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
-        while (rs.next()) {
-            String result = rs.getString(1);
-            System.out.println(result);
-            System.out.println(rs.getString(2));
-        }
+
+        assertTrue(rs.next());
+        assertEquals("a", rs.getString(1));
+        assertEquals("aaa bbb abc", rs.getString(2));
     }
 
 }
