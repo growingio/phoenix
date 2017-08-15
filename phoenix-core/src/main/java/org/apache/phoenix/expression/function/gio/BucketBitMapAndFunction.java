@@ -66,7 +66,7 @@ public class BucketBitMapAndFunction extends ScalarFunction {
             ptr.set(BucketBitMap.fastAnd(Iterators.toArray(values.iterator(),
                     BucketBitMap.class)).getBytes());
             return true;
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
