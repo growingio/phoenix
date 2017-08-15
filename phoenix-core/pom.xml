@@ -226,13 +226,6 @@
     <dependency>
       <groupId>io.growing</groupId>
       <artifactId>bitmap</artifactId>
-      <version>0.6.26-GIO1.7.8</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.scala-lang</groupId>
-          <artifactId>scala-library</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>co.cask.tephra</groupId>
