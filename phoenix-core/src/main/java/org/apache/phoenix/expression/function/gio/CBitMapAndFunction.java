@@ -61,7 +61,7 @@ public class CBitMapAndFunction extends ScalarFunction {
             left.and(right);
             ptr.set(left.getBytes());
             return true;
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Unexpected exception", e);
         }
     }

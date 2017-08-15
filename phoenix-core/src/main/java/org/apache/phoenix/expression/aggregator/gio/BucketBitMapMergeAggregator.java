@@ -48,7 +48,7 @@ public class BucketBitMapMergeAggregator extends BaseAggregator {
         try {
             BucketBitMap value = new BucketBitMap(ptr.copyBytes());
             bucketBm.or(value);
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Unexpected exception", e);
         }
     }

@@ -62,7 +62,7 @@ public class BucketBitMapCountFunction extends ScalarFunction {
             }
             ptr.set(lengthBuf);
             return true;
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Unexpected exception", e);
         }
     }
