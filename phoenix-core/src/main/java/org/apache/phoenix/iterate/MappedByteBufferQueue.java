@@ -299,7 +299,8 @@ public abstract class MappedByteBufferQueue<T> extends AbstractQueue<T> {
             Queue<T> inMemQueue = getInMemoryQueue();
             int resultSize = sizeOf(entry);
             maxResultSize = Math.max(maxResultSize, resultSize);
-            totalResultSize = hasMaxQueueSize ? maxResultSize * inMemQueue.size() : (totalResultSize + resultSize);
+//            totalResultSize = hasMaxQueueSize ? maxResultSize * inMemQueue.size() : (totalResultSize + resultSize);
+            totalResultSize += resultSize;
             if (totalResultSize >= thresholdBytes) {
                 this.file = File.createTempFile(UUID.randomUUID().toString(), null);
                 RandomAccessFile af = new RandomAccessFile(file, "rw");
