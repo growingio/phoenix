@@ -60,9 +60,6 @@ public class BucketBitMapMergeAggregator extends BaseAggregator {
 
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
-//        if (bucketBm.isEmpty()) {
-//            return false;
-//        }
         try {
             byte[] bmBytes = bucketBm.getBytes();
             ptr.set(bmBytes, 0, bmBytes.length);

@@ -259,7 +259,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(1, rs.getLong(1));
+        assertEquals(1.0D, rs.getDouble(1), 0D);
     }
 
     @Test
@@ -270,7 +270,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(1, rs.getLong(1));
+        assertEquals(1.0D, rs.getDouble(1), 0D);
     }
 
     @Test
@@ -281,7 +281,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(3, rs.getLong(1));
+        assertEquals(3.0D, rs.getDouble(1), 0D);
     }
 
     @Test
@@ -295,7 +295,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(3, rs.getLong(1));
+        assertEquals(3.0D, rs.getDouble(1), 0D);
     }
 
     @Test
@@ -304,7 +304,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(0, rs.getLong(1));
+        assertEquals(0D, rs.getDouble(1), 0D);
     }
 
     ///////////////////////////////////////////
@@ -319,7 +319,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(3, rs.getLong(1));
+        assertEquals(3D, rs.getDouble(1), 0D);
     }
 
     @Test
@@ -330,7 +330,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(2, rs.getLong(1));
+        assertEquals(2D, rs.getDouble(1), 0D);
     }
 
     @Test
@@ -341,7 +341,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(10, rs.getLong(1));
+        assertEquals(10D, rs.getDouble(1), 0D);
     }
 
     @Test
@@ -355,7 +355,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(10, rs.getLong(1));
+        assertEquals(10D, rs.getDouble(1), 0D);
     }
 
     @Test
@@ -364,6 +364,6 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
-        assertEquals(0, rs.getLong(1));
+        assertEquals(0, rs.getDouble(1), 0D);
     }
 }

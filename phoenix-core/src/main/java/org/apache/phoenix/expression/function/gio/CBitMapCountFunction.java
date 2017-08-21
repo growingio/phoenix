@@ -25,10 +25,9 @@ import org.apache.phoenix.parse.FunctionParseNode.Argument;
 import org.apache.phoenix.parse.FunctionParseNode.BuiltInFunction;
 import org.apache.phoenix.schema.tuple.Tuple;
 import org.apache.phoenix.schema.types.PDataType;
-import org.apache.phoenix.schema.types.PLong;
+import org.apache.phoenix.schema.types.PDouble;
 import org.apache.phoenix.schema.types.PVarbinary;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -53,12 +52,12 @@ public class CBitMapCountFunction extends ScalarFunction {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            byte[] lengthBuf = new byte[PLong.INSTANCE.getByteSize()];
+            byte[] lengthBuf = new byte[PDouble.INSTANCE.getByteSize()];
             if (children.get(0).evaluate(tuple, ptr)) {
                 CBitMap cbm = new CBitMap(ptr.copyBytes());
-                PLong.INSTANCE.getCodec().encodeLong(cbm.getCount(), lengthBuf, 0);
+                PDouble.INSTANCE.getCodec().encodeDouble(cbm.getCount(), lengthBuf, 0);
             } else {
-                PLong.INSTANCE.getCodec().encodeLong(0L, lengthBuf, 0);
+                PDouble.INSTANCE.getCodec().encodeDouble(0D, lengthBuf, 0);
             }
             ptr.set(lengthBuf);
             return true;
@@ -69,6 +68,6 @@ public class CBitMapCountFunction extends ScalarFunction {
 
     @Override
     public PDataType getDataType() {
-        return PLong.INSTANCE;
+        return PDouble.INSTANCE;
     }
 }

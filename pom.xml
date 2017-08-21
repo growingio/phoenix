@@ -965,13 +965,13 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <bitmap.version>0.6.26-GIO1.7.8</bitmap.version>
+        <bitmap.version>0.6.26-GIO1.8.0</bitmap.version>
       </properties>
     </profile>
     <profile>
       <id>bitmap-native</id>
       <properties>
-        <bitmap.version>0.6.26-GIO1.7.8-native</bitmap.version>
+        <bitmap.version>0.6.26-GIO1.8.0-native</bitmap.version>
       </properties>
     </profile>
   </profiles>
