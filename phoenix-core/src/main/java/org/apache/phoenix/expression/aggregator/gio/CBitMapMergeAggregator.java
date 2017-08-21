@@ -60,9 +60,6 @@ public class CBitMapMergeAggregator extends BaseAggregator {
 
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
-//        if (cbm.isEmpty()) {
-//            return false;
-//        }
         try {
             byte[] bmBytes = cbm.getBytes();
             ptr.set(bmBytes, 0, bmBytes.length);
