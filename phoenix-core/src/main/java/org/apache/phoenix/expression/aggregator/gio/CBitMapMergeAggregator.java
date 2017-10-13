@@ -36,6 +36,8 @@ import java.io.IOException;
  */
 public class CBitMapMergeAggregator extends BaseAggregator {
     private CBitMap cbm = new CBitMap();
+    private byte[] data = null;
+    private boolean isFirst = true;
 
     public CBitMapMergeAggregator(SortOrder sortOrder, ImmutableBytesWritable ptr) {
         super(sortOrder);
@@ -46,8 +48,16 @@ public class CBitMapMergeAggregator extends BaseAggregator {
 
     private void mergeValue(ImmutableBytesWritable ptr) {
         try {
-            CBitMap value = new CBitMap(ptr.copyBytes());
-            cbm.or(value);
+            if (isFirst) {
+                data = ptr.copyBytes();
+                isFirst = false;
+            } else {
+                if (data != null) {
+                    cbm = new CBitMap(data);
+                    data = null;
+                }
+                cbm.or(new CBitMap(ptr.copyBytes()));
+            }
         } catch (Exception e) {
             throw new RuntimeException("Unexpected exception", e);
         }
@@ -61,8 +71,12 @@ public class CBitMapMergeAggregator extends BaseAggregator {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            byte[] bmBytes = cbm.getBytes();
-            ptr.set(bmBytes, 0, bmBytes.length);
+            if (data != null) {
+                ptr.set(data, 0, data.length);
+            } else {
+                byte[] bmBytes = cbm.getBytes();
+                ptr.set(bmBytes, 0, bmBytes.length);
+            }
             return true;
         } catch (IOException e) {
             throw new RuntimeException("Unexpected exception", e);
@@ -77,6 +91,8 @@ public class CBitMapMergeAggregator extends BaseAggregator {
     @Override
     public void reset() {
         cbm = new CBitMap();
+        data = null;
+        isFirst = true;
         super.reset();
     }
 
@@ -88,7 +104,13 @@ public class CBitMapMergeAggregator extends BaseAggregator {
     @Override
     public int getSize() {
         try {
-            return super.getSize() + cbm.getSizeInBytes() + SizedUtil.ARRAY_SIZE;
+            int dataSize = 0;
+            if (data != null) {
+                dataSize = data.length;
+            } else {
+                dataSize = cbm.getSizeInBytes();
+            }
+            return super.getSize() + dataSize + SizedUtil.ARRAY_SIZE;
         } catch (IOException e) {
             throw new RuntimeException("Unexpected exception", e);
         }

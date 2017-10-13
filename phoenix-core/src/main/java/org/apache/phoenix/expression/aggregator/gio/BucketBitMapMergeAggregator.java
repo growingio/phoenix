@@ -36,6 +36,8 @@ import java.io.IOException;
  */
 public class BucketBitMapMergeAggregator extends BaseAggregator {
     private BucketBitMap bucketBm = new BucketBitMap();
+    private byte[] data = null;
+    private boolean isFirst = true;
 
     public BucketBitMapMergeAggregator(SortOrder sortOrder, ImmutableBytesWritable ptr) {
         super(sortOrder);
@@ -46,8 +48,17 @@ public class BucketBitMapMergeAggregator extends BaseAggregator {
 
     private void mergeValue(ImmutableBytesWritable ptr) {
         try {
-            BucketBitMap value = new BucketBitMap(ptr.copyBytes());
-            bucketBm.or(value);
+            if (isFirst) {
+                data = ptr.copyBytes();
+                isFirst = false;
+            } else {
+                if (data != null) {
+                    bucketBm = new BucketBitMap(data);
+                    data = null;
+                }
+                BucketBitMap value = new BucketBitMap(ptr.copyBytes());
+                bucketBm.or(value);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Unexpected exception", e);
         }
@@ -61,8 +72,12 @@ public class BucketBitMapMergeAggregator extends BaseAggregator {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            byte[] bmBytes = bucketBm.getBytes();
-            ptr.set(bmBytes, 0, bmBytes.length);
+            if (data != null) {
+                ptr.set(data, 0, data.length);
+            } else {
+                byte[] bmBytes = bucketBm.getBytes();
+                ptr.set(bmBytes, 0, bmBytes.length);
+            }
         } catch (IOException e) {
             throw new RuntimeException("Unexpected exception", e);
         }
@@ -77,6 +92,8 @@ public class BucketBitMapMergeAggregator extends BaseAggregator {
     @Override
     public void reset() {
         bucketBm = new BucketBitMap();
+        data = null;
+        isFirst = true;
         super.reset();
     }
 
@@ -88,7 +105,13 @@ public class BucketBitMapMergeAggregator extends BaseAggregator {
     @Override
     public int getSize() {
         try {
-            return super.getSize() + bucketBm.getSizeInBytes() + SizedUtil.ARRAY_SIZE;
+            int dataSize = 0;
+            if (data != null) {
+                dataSize = data.length;
+            } else {
+                dataSize = bucketBm.getSizeInBytes();
+            }
+            return super.getSize() + dataSize + SizedUtil.ARRAY_SIZE;
         } catch (IOException e) {
             throw new RuntimeException("Unexpected exception", e);
         }
