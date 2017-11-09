@@ -965,7 +965,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <bitmap.version>0.6.26-GIO1.8.0</bitmap.version>
+        <bitmap.version>0.6.26-GIO1.8.3</bitmap.version>
       </properties>
     </profile>
     <profile>
