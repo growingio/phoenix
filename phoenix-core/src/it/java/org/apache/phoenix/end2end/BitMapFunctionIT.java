@@ -53,9 +53,11 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         String create1 = "CREATE TABLE test_rbm1 (id INTEGER PRIMARY KEY, bm VARBINARY)";
         String create2 = "CREATE TABLE test_rbm2 (id INTEGER PRIMARY KEY, bm VARBINARY)";
         String create3 = "CREATE TABLE test_rbm3 (id INTEGER PRIMARY KEY, bm VARBINARY)";
+        String create4 = "CREATE TABLE test_rbm4 (id INTEGER PRIMARY KEY, bm VARBINARY)";
         stmt.addBatch(create1);
         stmt.addBatch(create2);
         stmt.addBatch(create3);
+        stmt.addBatch(create4);
         stmt.executeBatch();
         stmt.close();
 
@@ -89,6 +91,22 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         prepareStmt3.addBatch();
         prepareStmt3.executeBatch();
         prepareStmt3.close();
+
+        String upsert4 = "upsert into test_rbm4 values (?,?)";
+        PreparedStatement prepareStmt4 = conn.prepareStatement(upsert4);
+        RoaringBitmap sample1 = new RoaringBitmap();
+        RoaringBitmap sample2 = new RoaringBitmap();
+        for (int i = 1; i < 256; i++) {
+            sample1.add(i);
+            if (i % 3 == 0)
+                sample2.add(i);
+        }
+        prepareStmt4.setInt(1, 1);
+        prepareStmt4.setBytes(2, sample1.getBytes());
+        prepareStmt4.execute();
+        prepareStmt4.setInt(1, 2);
+        prepareStmt4.setBytes(2, sample2.getBytes());
+        prepareStmt4.execute();
 
         conn.commit();
     }
@@ -247,6 +265,20 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         assertEquals(0, rs.getLong(1));
     }
 
+    @Test
+    public void testRBitMapSample() throws SQLException {
+        int sampleRatio = 4;
+        String query = "select id, bm, rbitmap_sample(bm, " + sampleRatio + ") from test_rbm4";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            int id = rs.getInt(1);
+            RoaringBitmap original = new RoaringBitmap(rs.getBytes(2));
+            RoaringBitmap rbm = new RoaringBitmap(rs.getBytes(3));
+            assertEquals(original.sample(sampleRatio).getCardinality(), rbm.getCardinality());
+        }
+    }
+
     ///////////////////////////////////////////
     // BucketBitMap tests                    //
     ///////////////////////////////////////////
@@ -307,6 +339,21 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         assertEquals(0D, rs.getDouble(1), 0D);
     }
 
+    @Test
+    public void testBucketBitMapSample() throws SQLException, IOException, ClassNotFoundException {
+        String query = "select id, bm, bucket_bitmap_sample(bm, 2) from test_bucket_bm1" +
+                " union all " +
+                "select id, bm, bucket_bitmap_sample(bm, 2) from test_bucket_bm2" +
+                " union all " +
+                "select id, bm, bucket_bitmap_sample(bm, 2) from test_bucket_bm3";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            BucketBitMap original = new BucketBitMap(rs.getBytes(2));
+            BucketBitMap sampled = new BucketBitMap(rs.getBytes(3));
+            assertEquals(original.sample(2).getUniqueCardinality(), sampled.getUniqueCardinality());
+        }
+    }
     ///////////////////////////////////////////
     // CBitMap tests                         //
     ///////////////////////////////////////////
@@ -365,5 +412,21 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         ResultSet rs = stmt.executeQuery(query);
         assertTrue(rs.next());
         assertEquals(0, rs.getDouble(1), 0D);
+    }
+
+    @Test
+    public void testCBitMapSample() throws SQLException, IOException, ClassNotFoundException {
+        String query = "select id, bm, cbitmap_sample(bm, 2) from test_cbm1" +
+                " union all " +
+                "select id, bm, cbitmap_sample(bm, 2) from test_cbm2" +
+                " union all " +
+                "select id, bm, cbitmap_sample(bm, 2) from test_cbm3";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            CBitMap original = new CBitMap(rs.getBytes(2));
+            CBitMap sampled = new CBitMap(rs.getBytes(3));
+            assertEquals((long)original.sample(2).getCount(), (long)sampled.getCount());
+        }
     }
 }
