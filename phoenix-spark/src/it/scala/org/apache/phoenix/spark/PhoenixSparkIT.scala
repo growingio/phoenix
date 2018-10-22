@@ -17,6 +17,14 @@ import java.util.Date
 
 import org.apache.phoenix.schema.types.PVarchar
 import org.apache.phoenix.util.{ColumnInfo, SchemaUtil}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.hbase.HConstants
+import org.apache.phoenix.end2end.BaseHBaseManagedTimeIT
+import org.apache.phoenix.query.BaseTest
+import org.apache.phoenix.schema.ColumnNotFoundException
+import org.apache.phoenix.schema.types.PVarchar
+import org.apache.phoenix.util.{ColumnInfo, SchemaUtil}
+import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.joda.time.DateTime
@@ -340,6 +348,7 @@ class PhoenixSparkIT extends AbstractPhoenixSparkIT {
       .option("table", "TABLE1_COPY")
       .option("zkUrl", quorumAddress)
       .save()
+    // df.saveToPhoenix("TABLE1_COPY", new Configuration, Some(quorumAddress))
 
     // Verify results
     stmt = conn.createStatement()

@@ -22,6 +22,10 @@ import java.util.Map;
 import org.apache.phoenix.expression.function.*;
 
 import com.google.common.collect.Maps;
+import org.apache.phoenix.expression.function.gio.*;
+import org.apache.phoenix.expression.function.*;
+
+import java.util.Map;
 
 /**
  *
@@ -62,6 +66,10 @@ public enum ExpressionType {
     ComparisonExpression(ComparisonExpression.class),
     CountAggregateFunction(CountAggregateFunction.class),
     SumAggregateFunction(SumAggregateFunction.class),
+    RBitMapMergeFunction(RBitMapMergeFunction.class),
+    BucketBitMapMergeFunction(BucketBitMapMergeFunction.class),
+    CBitMapMergeFunction(CBitMapMergeFunction.class),
+    SBitMapMergeFunction(SBitMapMergeFunction.class),
     MinAggregateFunction(MinAggregateFunction.class),
     MaxAggregateFunction(MaxAggregateFunction.class),
     StringBasedLikeExpression(StringBasedLikeExpression.class),
@@ -167,6 +175,26 @@ public enum ExpressionType {
     SetByteFunction(SetByteFunction.class),
     GetBitFunction(GetBitFunction.class),
     SetBitFunction(SetBitFunction.class),
+    RBitMapAndFunction(RBitMapAndFunction.class),
+    RBitMapOrFunction(RBitMapOrFunction.class),
+    RBitMapAndNotFunction(RBitMapAndNotFunction.class),
+    RBitMapCountFunction(RBitMapCountFunction.class),
+    RBitMapSampleFunction(RBitMapSampleFunction.class),
+    BucketBitMapAndFunction(BucketBitMapAndFunction.class),
+    BucketBitMapOrFunction(BucketBitMapOrFunction.class),
+    BucketBitMapAndNotFunction(BucketBitMapAndNotFunction.class),
+    BucketBitMapCountFunction(BucketBitMapCountFunction.class),
+    BucketBitMapSampleFunction(BucketBitMapSampleFunction.class),
+    CBitMapAndFunction(CBitMapAndFunction.class),
+    CBitMapOrFunction(CBitMapOrFunction.class),
+    CBitMapAndNotFunction(CBitMapAndNotFunction.class),
+    CBitMapCountFunction(CBitMapCountFunction.class),
+    CBitMapSampleFunction(CBitMapSampleFunction.class),
+    SBitMapAndFunction(SBitMapAndFunction.class),
+    SBitMapOrFunction(SBitMapOrFunction.class),
+    SBitMapAndNotFunction(SBitMapAndNotFunction.class),
+    SBitMapCountFunction(SBitMapCountFunction.class),
+    SBitMapSampleFunction(SBitMapSampleFunction.class),
     OctetLengthFunction(OctetLengthFunction.class),
     RoundWeekExpression(RoundWeekExpression.class),
     RoundMonthExpression(RoundMonthExpression.class),
@@ -187,6 +215,7 @@ public enum ExpressionType {
     CollationKeyFunction(CollationKeyFunction.class),
     ArrayRemoveFunction(ArrayRemoveFunction.class),
     TransactionProviderNameFunction(TransactionProviderNameFunction.class),
+    StringMergeFunction(StringMergeFunction.class)
     ;
 
     ExpressionType(Class<? extends Expression> clazz) {
@@ -199,7 +228,8 @@ public enum ExpressionType {
 
     private final Class<? extends Expression> clazz;
 
-    private static final Map<Class<? extends Expression>,ExpressionType> classToEnumMap = Maps.newHashMapWithExpectedSize(3);
+    private static final Map<Class<? extends Expression>, ExpressionType> classToEnumMap = Maps.newHashMapWithExpectedSize(3);
+
     static {
         for (ExpressionType type : ExpressionType.values()) {
             classToEnumMap.put(type.clazz, type);
@@ -222,9 +252,9 @@ public enum ExpressionType {
      * or null if none exists.
      */
     public static ExpressionType valueOfOrNull(Expression expression) {
-        Class <? extends Expression> clazz = expression.getClass();
+        Class<? extends Expression> clazz = expression.getClass();
         // We will not have CorrelateVariableFieldAccessExpression on the server side,
-        // it will be evaluated at client side and will be serialized as 
+        // it will be evaluated at client side and will be serialized as
         // LiteralExpression instead.
         if (clazz == CorrelateVariableFieldAccessExpression.class) {
             clazz = LiteralExpression.class;

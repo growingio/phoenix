@@ -245,13 +245,15 @@ public class ServerCacheClient {
             // Size these based on worst case
             futures = new ArrayList<Future<Boolean>>(nRegions);
             Set<HRegionLocation> servers = new HashSet<HRegionLocation>(nRegions);
+            boolean isBulketTable = cacheUsingTable.getBucketNum() != null;
             for (HRegionLocation entry : locations) {
                 // Keep track of servers we've sent to and only send once
                 byte[] regionStartKey = entry.getRegionInfo().getStartKey();
                 byte[] regionEndKey = entry.getRegionInfo().getEndKey();
-                if ( ! servers.contains(entry) && 
+                if (isBulketTable || (
+                        ! servers.contains(entry) &&
                         keyRanges.intersectRegion(regionStartKey, regionEndKey,
-                                cacheUsingTable.getIndexType() == IndexType.LOCAL)) {  
+                                cacheUsingTable.getIndexType() == IndexType.LOCAL))) {
                     // Call RPC once per server
                     servers.add(entry);
                     if (LOG.isDebugEnabled()) {LOG.debug(addCustomAnnotations("Adding cache entry to be sent for " + entry, connection));}

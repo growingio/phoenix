@@ -56,6 +56,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.hbase.HConstants;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
 import org.apache.hadoop.hbase.TableName;
@@ -175,16 +178,17 @@ public abstract class BaseResultIterators extends ExplainTable implements Result
     abstract protected boolean isSerial();
     
     protected boolean useStats() {
-        /*
-         * Don't use guide posts:
-         * 1) If we're collecting stats, as in this case we need to scan entire
-         * regions worth of data to track where to put the guide posts.
-         * 2) If the query is going to be executed serially.
-         */
-        if (ScanUtil.isAnalyzeTable(scan)) {
-            return false;
-        }
-        return !isSerial();
+//        /*
+//         * Don't use guide posts:
+//         * 1) If we're collecting stats, as in this case we need to scan entire
+//         * regions worth of data to track where to put the guide posts.
+//         * 2) If the query is going to be executed serially.
+//         */
+//        if (ScanUtil.isAnalyzeTable(scan)) {
+//            return false;
+//        }
+//        return !isSerial();
+        return false;
     }
     
     private static void initializeScan(QueryPlan plan, Integer perScanLimit, Integer offset, Scan scan) throws SQLException {

@@ -17,13 +17,12 @@
  */
 package org.apache.hadoop.hbase.ipc;
 
-import java.io.IOException;
-
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.phoenix.query.QueryServices;
 import org.apache.phoenix.query.QueryServicesOptions;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.io.IOException;
 
 /**
  * {@link RpcScheduler} that first checks to see if this is an index or metedata update before passing off the

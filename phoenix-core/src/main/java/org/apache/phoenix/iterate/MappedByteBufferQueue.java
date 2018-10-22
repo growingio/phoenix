@@ -17,6 +17,9 @@
  */
 package org.apache.phoenix.iterate;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.MinMaxPriorityQueue;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.MinMaxPriorityQueue;
 
 public abstract class MappedByteBufferQueue<T> extends AbstractQueue<T> {
     private final int thresholdBytes;
@@ -300,7 +300,8 @@ public abstract class MappedByteBufferQueue<T> extends AbstractQueue<T> {
             Queue<T> inMemQueue = getInMemoryQueue();
             int resultSize = sizeOf(entry);
             maxResultSize = Math.max(maxResultSize, resultSize);
-            totalResultSize = hasMaxQueueSize ? maxResultSize * inMemQueue.size() : (totalResultSize + resultSize);
+//            totalResultSize = hasMaxQueueSize ? maxResultSize * inMemQueue.size() : (totalResultSize + resultSize);
+            totalResultSize += resultSize;
             if (totalResultSize >= thresholdBytes) {
                 this.file = File.createTempFile(UUID.randomUUID().toString(), null);
                 RandomAccessFile af = new RandomAccessFile(file, "rw");
