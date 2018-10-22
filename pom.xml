@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.phoenix</groupId>
   <artifactId>phoenix</artifactId>
-  <version>4.7.0-HBase-1.1</version>
+  <version>4.7.0-HBase-1.2-GIO-2.1.3</version>
   <packaging>pom</packaging>
   <name>Apache Phoenix</name>
   <description>A SQL layer over HBase</description>
@@ -58,6 +58,11 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>growing-release</id>
+      <name>GrowingIO Release</name>
+      <url>http://54.223.132.19:8081/nexus/content/groups/public</url>
+    </repository>
   </repositories>
 
   <parent>
@@ -66,11 +71,20 @@
     <version>14</version>
   </parent>
 
+  <!--
   <scm>
     <connection>scm:git:http://git-wip-us.apache.org/repos/asf/phoenix.git</connection>
     <url>https://git-wip-us.apache.org/repos/asf/phoenix.git</url>
     <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/phoenix.git</developerConnection>
   </scm>
+  -->
+
+  <distributionManagement>
+    <repository>
+      <id>releases</id>
+      <url>http://54.223.132.19:8081/nexus/content/repositories/releases</url>
+    </repository>
+  </distributionManagement>
 
   <properties>
     <!-- General Properties -->
@@ -80,12 +94,12 @@
     <top.dir>${project.basedir}</top.dir>
 
     <!-- Hadoop Versions -->
-    <hbase.version>1.1.3</hbase.version>
-    <hadoop-two.version>2.5.1</hadoop-two.version>
+    <hbase.version>1.2.3</hbase.version>
+    <hadoop-two.version>2.7.3</hadoop-two.version>
 
     <!-- Dependency versions -->
     <commons-cli.version>1.2</commons-cli.version>
-    <hadoop.version>2.5.1</hadoop.version>
+    <hadoop.version>2.7.3</hadoop.version>
     <pig.version>0.13.0</pig.version>
     <jackson.version>1.9.2</jackson.version>
     <antlr.version>3.5</antlr.version>
@@ -98,7 +112,7 @@
     <commons-logging.version>1.2</commons-logging.version>
     <commons-csv.version>1.0</commons-csv.version>
     <sqlline.version>1.1.8</sqlline.version>
-    <guava.version>13.0.1</guava.version>
+    <guava.version>14.0.1</guava.version>
     <flume.version>1.4.0</flume.version>
     <findbugs.version>1.3.2</findbugs.version>
     <jline.version>2.11</jline.version>
@@ -113,9 +127,9 @@
     <calcite.version>1.6.0</calcite.version>
     <jettyVersion>8.1.7.v20120910</jettyVersion>
     <tephra.version>0.7.0</tephra.version>
-    <spark.version>1.5.2</spark.version>
-    <scala.version>2.10.4</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
+    <spark.version>2.1.1</spark.version>
+    <scala.version>2.11.8</scala.version>
+    <scala.binary.version>2.11</scala.binary.version>
 
     <!-- Test Dependencies -->
     <mockito-all.version>1.8.5</mockito-all.version>
@@ -503,6 +517,22 @@
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -516,6 +546,22 @@
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -527,6 +573,24 @@
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-common</artifactId>
         <version>${hbase.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
@@ -539,6 +603,24 @@
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-client</artifactId>
         <version>${hbase.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
@@ -551,6 +633,24 @@
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-server</artifactId>
         <version>${hbase.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
@@ -563,6 +663,24 @@
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-hadoop-compat</artifactId>
         <version>${hbase.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
@@ -583,6 +701,24 @@
         <version>${hbase.version}</version>
         <type>test-jar</type>
         <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- Hadoop Dependencies -->
@@ -825,6 +961,11 @@
         <artifactId>joda-time</artifactId>
         <version>${jodatime.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.growing</groupId>
+        <artifactId>bitmap</artifactId>
+        <version>${bitmap.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -862,6 +1003,21 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>bitmap</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <bitmap.version>0.6.26-GIO1.8.3</bitmap.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>bitmap-native</id>
+      <properties>
+        <bitmap.version>0.6.26-GIO1.8.3-native</bitmap.version>
+      </properties>
     </profile>
   </profiles>
 </project>

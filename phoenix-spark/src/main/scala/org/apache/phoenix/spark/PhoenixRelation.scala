@@ -65,34 +65,34 @@ case class PhoenixRelation(tableName: String, zkUrl: String)(@transient val sqlC
     }
 
     val filter = new StringBuilder("")
-    var i = 0
+//    var i = 0
 
-    filters.foreach(f => {
+    filters.map(f => {
       // Assume conjunction for multiple filters, unless otherwise specified
-      if (i > 0) {
-        filter.append(" AND")
-      }
+//      if (i > 0) {
+//        (" AND")
+//      }
 
       f match {
         // Spark 1.3.1+ supported filters
-        case And(leftFilter, rightFilter) => filter.append(buildFilter(Array(leftFilter, rightFilter)))
-        case Or(leftFilter, rightFilter) => filter.append(buildFilter(Array(leftFilter)) + " OR " + buildFilter(Array(rightFilter)))
-        case Not(aFilter) => filter.append(" NOT " + buildFilter(Array(aFilter)))
-        case EqualTo(attr, value) => filter.append(s" $attr = ${compileValue(value)}")
-        case GreaterThan(attr, value) => filter.append(s" $attr > ${compileValue(value)}")
-        case GreaterThanOrEqual(attr, value) => filter.append(s" $attr >= ${compileValue(value)}")
-        case LessThan(attr, value) => filter.append(s" $attr < ${compileValue(value)}")
-        case LessThanOrEqual(attr, value) => filter.append(s" $attr <= ${compileValue(value)}")
-        case IsNull(attr) => filter.append(s" $attr IS NULL")
-        case IsNotNull(attr) => filter.append(s" $attr IS NOT NULL")
-        case In(attr, values) => filter.append(s" $attr IN ${values.map(compileValue).mkString("(", ",", ")")}")
-        case StringStartsWith(attr, value) => filter.append(s" $attr LIKE ${compileValue(value + "%")}")
-        case StringEndsWith(attr, value) => filter.append(s" $attr LIKE ${compileValue("%" + value)}")
-        case StringContains(attr, value) => filter.append(s" $attr LIKE ${compileValue("%" + value + "%")}")
+        case And(leftFilter, rightFilter) => (buildFilter(Array(leftFilter, rightFilter)))
+        case Or(leftFilter, rightFilter) => (buildFilter(Array(leftFilter)) + " OR " + buildFilter(Array(rightFilter)))
+        case Not(aFilter) => (" NOT " + buildFilter(Array(aFilter)))
+        case EqualTo(attr, value) => (s" $attr = ${compileValue(value)}")
+        case GreaterThan(attr, value) => (s" $attr > ${compileValue(value)}")
+        case GreaterThanOrEqual(attr, value) => (s" $attr >= ${compileValue(value)}")
+        case LessThan(attr, value) => (s" $attr < ${compileValue(value)}")
+        case LessThanOrEqual(attr, value) => (s" $attr <= ${compileValue(value)}")
+        case IsNull(attr) => (s" $attr IS NULL")
+        case IsNotNull(attr) => (s" $attr IS NOT NULL")
+        case In(attr, values) => (s" $attr IN ${values.map(compileValue).mkString("(", ",", ")")}")
+        case StringStartsWith(attr, value) => (s" $attr LIKE ${compileValue(value + "%")}")
+        case StringEndsWith(attr, value) => (s" $attr LIKE ${compileValue("%" + value)}")
+        case StringContains(attr, value) => (s" $attr LIKE ${compileValue("%" + value + "%")}")
       }
 
-      i = i + 1
-    })
+//      i = i + 1
+    }).mkString("(",") AND (",")")
 
     filter.toString()
   }

@@ -17,10 +17,6 @@
  */
 package org.apache.phoenix.iterate;
 
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.phoenix.compile.QueryPlan;
 import org.apache.phoenix.compile.StatementContext;
@@ -29,7 +25,13 @@ import org.apache.phoenix.monitoring.ReadMetricQueue;
 import org.apache.phoenix.query.KeyRange;
 import org.apache.phoenix.util.ServerUtil;
 
-import com.google.common.collect.Lists;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -47,21 +49,49 @@ public class UnionResultIterators implements ResultIterators {
     private final List<OverAllQueryMetrics> overAllQueryMetricsList;
     private boolean closed;
     private final StatementContext parentStmtCtx;
+    private List<SQLException> exceptions;
     public UnionResultIterators(List<QueryPlan> plans, StatementContext parentStmtCtx) throws SQLException {
         this.parentStmtCtx = parentStmtCtx;
         this.plans = plans;
         int nPlans = plans.size();
-        iterators = Lists.newArrayListWithExpectedSize(nPlans);
-        splits = Lists.newArrayListWithExpectedSize(nPlans * 30); 
-        scans = Lists.newArrayListWithExpectedSize(nPlans * 10); 
-        readMetricsList = Lists.newArrayListWithCapacity(nPlans);
-        overAllQueryMetricsList = Lists.newArrayListWithCapacity(nPlans);
+        iterators = new Vector<>(nPlans);
+        splits = new Vector<>(nPlans * 30, nPlans);
+        scans = new Vector<>(nPlans * 10, nPlans);
+        readMetricsList = new Vector<>(nPlans);
+        overAllQueryMetricsList = new Vector<>(nPlans);
+        exceptions = new Vector<>(nPlans);
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(plans.size(), plans.size(), plans.size(), TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>());
         for (QueryPlan plan : this.plans) {
-            readMetricsList.add(plan.getContext().getReadMetricsQueue());
-            overAllQueryMetricsList.add(plan.getContext().getOverallQueryMetrics());
-            iterators.add(LookAheadResultIterator.wrap(plan.iterator()));
-            splits.addAll(plan.getSplits()); 
-            scans.addAll(plan.getScans());
+            executor.execute(new QueryTask(plan));
+        }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(600, TimeUnit.SECONDS);
+        } catch(Exception e) {
+            throw new SQLException(e);
+        }
+        if (exceptions.size() > 0)
+            throw new SQLException(exceptions.get(0));
+    }
+
+    private class QueryTask implements Runnable {
+        private QueryPlan plan;
+
+        public QueryTask(QueryPlan plan) {
+            this.plan = plan;
+        }
+
+        public void run() {
+            try {
+                readMetricsList.add(plan.getContext().getReadMetricsQueue());
+                overAllQueryMetricsList.add(plan.getContext().getOverallQueryMetrics());
+                iterators.add(LookAheadResultIterator.wrap(plan.iterator()));
+                splits.addAll(plan.getSplits());
+                scans.addAll(plan.getScans());
+            } catch (SQLException e) {
+                exceptions.add(e);
+            }
         }
     }
 

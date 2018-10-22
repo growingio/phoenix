@@ -17,116 +17,11 @@
  */
 package org.apache.phoenix.expression;
 
-import java.util.Map;
-
-import org.apache.phoenix.expression.function.AbsFunction;
-import org.apache.phoenix.expression.function.ArrayAllComparisonExpression;
-import org.apache.phoenix.expression.function.ArrayAnyComparisonExpression;
-import org.apache.phoenix.expression.function.ArrayAppendFunction;
-import org.apache.phoenix.expression.function.ArrayConcatFunction;
-import org.apache.phoenix.expression.function.ArrayElemRefExpression;
-import org.apache.phoenix.expression.function.ArrayFillFunction;
-import org.apache.phoenix.expression.function.ArrayIndexFunction;
-import org.apache.phoenix.expression.function.ArrayLengthFunction;
-import org.apache.phoenix.expression.function.ArrayPrependFunction;
-import org.apache.phoenix.expression.function.ArrayToStringFunction;
-import org.apache.phoenix.expression.function.ByteBasedRegexpReplaceFunction;
-import org.apache.phoenix.expression.function.ByteBasedRegexpSplitFunction;
-import org.apache.phoenix.expression.function.ByteBasedRegexpSubstrFunction;
-import org.apache.phoenix.expression.function.CbrtFunction;
-import org.apache.phoenix.expression.function.CeilDateExpression;
-import org.apache.phoenix.expression.function.CeilDecimalExpression;
-import org.apache.phoenix.expression.function.CeilFunction;
-import org.apache.phoenix.expression.function.CeilMonthExpression;
-import org.apache.phoenix.expression.function.CeilTimestampExpression;
-import org.apache.phoenix.expression.function.CeilWeekExpression;
-import org.apache.phoenix.expression.function.CeilYearExpression;
-import org.apache.phoenix.expression.function.CoalesceFunction;
-import org.apache.phoenix.expression.function.ConvertTimezoneFunction;
-import org.apache.phoenix.expression.function.CountAggregateFunction;
-import org.apache.phoenix.expression.function.DayOfMonthFunction;
-import org.apache.phoenix.expression.function.DecodeFunction;
-import org.apache.phoenix.expression.function.DistinctCountAggregateFunction;
-import org.apache.phoenix.expression.function.DistinctValueAggregateFunction;
-import org.apache.phoenix.expression.function.EncodeFunction;
-import org.apache.phoenix.expression.function.ExpFunction;
-import org.apache.phoenix.expression.function.ExternalSqlTypeIdFunction;
-import org.apache.phoenix.expression.function.FirstValueFunction;
-import org.apache.phoenix.expression.function.FloorDateExpression;
-import org.apache.phoenix.expression.function.FloorDecimalExpression;
-import org.apache.phoenix.expression.function.FloorFunction;
-import org.apache.phoenix.expression.function.FloorMonthExpression;
-import org.apache.phoenix.expression.function.FloorWeekExpression;
-import org.apache.phoenix.expression.function.FloorYearExpression;
-import org.apache.phoenix.expression.function.GetBitFunction;
-import org.apache.phoenix.expression.function.GetByteFunction;
-import org.apache.phoenix.expression.function.HourFunction;
-import org.apache.phoenix.expression.function.IndexStateNameFunction;
-import org.apache.phoenix.expression.function.InstrFunction;
-import org.apache.phoenix.expression.function.InvertFunction;
-import org.apache.phoenix.expression.function.LTrimFunction;
-import org.apache.phoenix.expression.function.LastValueFunction;
-import org.apache.phoenix.expression.function.LengthFunction;
-import org.apache.phoenix.expression.function.LnFunction;
-import org.apache.phoenix.expression.function.LogFunction;
-import org.apache.phoenix.expression.function.LowerFunction;
-import org.apache.phoenix.expression.function.LpadFunction;
-import org.apache.phoenix.expression.function.MD5Function;
-import org.apache.phoenix.expression.function.MaxAggregateFunction;
-import org.apache.phoenix.expression.function.MinAggregateFunction;
-import org.apache.phoenix.expression.function.MinuteFunction;
-import org.apache.phoenix.expression.function.MonthFunction;
-import org.apache.phoenix.expression.function.NowFunction;
-import org.apache.phoenix.expression.function.NthValueFunction;
-import org.apache.phoenix.expression.function.OctetLengthFunction;
-import org.apache.phoenix.expression.function.PercentRankAggregateFunction;
-import org.apache.phoenix.expression.function.PercentileContAggregateFunction;
-import org.apache.phoenix.expression.function.PercentileDiscAggregateFunction;
-import org.apache.phoenix.expression.function.PowerFunction;
-import org.apache.phoenix.expression.function.RTrimFunction;
-import org.apache.phoenix.expression.function.RandomFunction;
-import org.apache.phoenix.expression.function.RegexpReplaceFunction;
-import org.apache.phoenix.expression.function.RegexpSplitFunction;
-import org.apache.phoenix.expression.function.RegexpSubstrFunction;
-import org.apache.phoenix.expression.function.ReverseFunction;
-import org.apache.phoenix.expression.function.RoundDateExpression;
-import org.apache.phoenix.expression.function.RoundDecimalExpression;
-import org.apache.phoenix.expression.function.RoundFunction;
-import org.apache.phoenix.expression.function.RoundMonthExpression;
-import org.apache.phoenix.expression.function.RoundTimestampExpression;
-import org.apache.phoenix.expression.function.RoundWeekExpression;
-import org.apache.phoenix.expression.function.RoundYearExpression;
-import org.apache.phoenix.expression.function.SQLIndexTypeFunction;
-import org.apache.phoenix.expression.function.SQLTableTypeFunction;
-import org.apache.phoenix.expression.function.SQLViewTypeFunction;
-import org.apache.phoenix.expression.function.SecondFunction;
-import org.apache.phoenix.expression.function.SetBitFunction;
-import org.apache.phoenix.expression.function.SetByteFunction;
-import org.apache.phoenix.expression.function.SignFunction;
-import org.apache.phoenix.expression.function.SqlTypeNameFunction;
-import org.apache.phoenix.expression.function.SqrtFunction;
-import org.apache.phoenix.expression.function.StddevPopFunction;
-import org.apache.phoenix.expression.function.StddevSampFunction;
-import org.apache.phoenix.expression.function.StringBasedRegexpReplaceFunction;
-import org.apache.phoenix.expression.function.StringBasedRegexpSplitFunction;
-import org.apache.phoenix.expression.function.StringBasedRegexpSubstrFunction;
-import org.apache.phoenix.expression.function.StringToArrayFunction;
-import org.apache.phoenix.expression.function.SubstrFunction;
-import org.apache.phoenix.expression.function.SumAggregateFunction;
-import org.apache.phoenix.expression.function.TimezoneOffsetFunction;
-import org.apache.phoenix.expression.function.ToCharFunction;
-import org.apache.phoenix.expression.function.ToDateFunction;
-import org.apache.phoenix.expression.function.ToNumberFunction;
-import org.apache.phoenix.expression.function.ToTimeFunction;
-import org.apache.phoenix.expression.function.ToTimestampFunction;
-import org.apache.phoenix.expression.function.TrimFunction;
-import org.apache.phoenix.expression.function.TruncFunction;
-import org.apache.phoenix.expression.function.UDFExpression;
-import org.apache.phoenix.expression.function.UpperFunction;
-import org.apache.phoenix.expression.function.WeekFunction;
-import org.apache.phoenix.expression.function.YearFunction;
-
 import com.google.common.collect.Maps;
+import org.apache.phoenix.expression.function.gio.*;
+import org.apache.phoenix.expression.function.*;
+
+import java.util.Map;
 
 /**
  *
@@ -167,6 +62,10 @@ public enum ExpressionType {
     ComparisonExpression(ComparisonExpression.class),
     CountAggregateFunction(CountAggregateFunction.class),
     SumAggregateFunction(SumAggregateFunction.class),
+    RBitMapMergeFunction(RBitMapMergeFunction.class),
+    BucketBitMapMergeFunction(BucketBitMapMergeFunction.class),
+    CBitMapMergeFunction(CBitMapMergeFunction.class),
+    SBitMapMergeFunction(SBitMapMergeFunction.class),
     MinAggregateFunction(MinAggregateFunction.class),
     MaxAggregateFunction(MaxAggregateFunction.class),
     StringBasedLikeExpression(StringBasedLikeExpression.class),
@@ -272,6 +171,26 @@ public enum ExpressionType {
     SetByteFunction(SetByteFunction.class),
     GetBitFunction(GetBitFunction.class),
     SetBitFunction(SetBitFunction.class),
+    RBitMapAndFunction(RBitMapAndFunction.class),
+    RBitMapOrFunction(RBitMapOrFunction.class),
+    RBitMapAndNotFunction(RBitMapAndNotFunction.class),
+    RBitMapCountFunction(RBitMapCountFunction.class),
+    RBitMapSampleFunction(RBitMapSampleFunction.class),
+    BucketBitMapAndFunction(BucketBitMapAndFunction.class),
+    BucketBitMapOrFunction(BucketBitMapOrFunction.class),
+    BucketBitMapAndNotFunction(BucketBitMapAndNotFunction.class),
+    BucketBitMapCountFunction(BucketBitMapCountFunction.class),
+    BucketBitMapSampleFunction(BucketBitMapSampleFunction.class),
+    CBitMapAndFunction(CBitMapAndFunction.class),
+    CBitMapOrFunction(CBitMapOrFunction.class),
+    CBitMapAndNotFunction(CBitMapAndNotFunction.class),
+    CBitMapCountFunction(CBitMapCountFunction.class),
+    CBitMapSampleFunction(CBitMapSampleFunction.class),
+    SBitMapAndFunction(SBitMapAndFunction.class),
+    SBitMapOrFunction(SBitMapOrFunction.class),
+    SBitMapAndNotFunction(SBitMapAndNotFunction.class),
+    SBitMapCountFunction(SBitMapCountFunction.class),
+    SBitMapSampleFunction(SBitMapSampleFunction.class),
     OctetLengthFunction(OctetLengthFunction.class),
     RoundWeekExpression(RoundWeekExpression.class),
     RoundMonthExpression(RoundMonthExpression.class),
@@ -281,8 +200,8 @@ public enum ExpressionType {
     FloorYearExpression(FloorYearExpression.class),
     CeilWeekExpression(CeilWeekExpression.class),
     CeilMonthExpression(CeilMonthExpression.class),
-    CeilYearExpression(CeilYearExpression.class);
-    ;
+    CeilYearExpression(CeilYearExpression.class),
+    StringMergeFunction(StringMergeFunction.class);
 
     ExpressionType(Class<? extends Expression> clazz) {
         this.clazz = clazz;
@@ -294,7 +213,8 @@ public enum ExpressionType {
 
     private final Class<? extends Expression> clazz;
 
-    private static final Map<Class<? extends Expression>,ExpressionType> classToEnumMap = Maps.newHashMapWithExpectedSize(3);
+    private static final Map<Class<? extends Expression>, ExpressionType> classToEnumMap = Maps.newHashMapWithExpectedSize(3);
+
     static {
         for (ExpressionType type : ExpressionType.values()) {
             classToEnumMap.put(type.clazz, type);
@@ -317,9 +237,9 @@ public enum ExpressionType {
      * or null if none exists.
      */
     public static ExpressionType valueOfOrNull(Expression expression) {
-        Class <? extends Expression> clazz = expression.getClass();
+        Class<? extends Expression> clazz = expression.getClass();
         // We will not have CorrelateVariableFieldAccessExpression on the server side,
-        // it will be evaluated at client side and will be serialized as 
+        // it will be evaluated at client side and will be serialized as
         // LiteralExpression instead.
         if (clazz == CorrelateVariableFieldAccessExpression.class) {
             clazz = LiteralExpression.class;

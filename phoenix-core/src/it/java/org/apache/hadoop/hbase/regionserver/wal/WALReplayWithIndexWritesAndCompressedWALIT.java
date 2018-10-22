@@ -18,12 +18,6 @@
 
 package org.apache.hadoop.hbase.regionserver.wal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -65,6 +59,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * For pre-0.94.9 instances, this class tests correctly deserializing WALEdits w/o compression. Post
@@ -200,7 +200,7 @@ public class WALReplayWithIndexWritesAndCompressedWALIT {
     Mockito.when(mockRS.getServerName()).thenReturn(mockServerName);
     HRegion region = new HRegion(basedir, wal, this.fs, this.conf, hri, htd, mockRS);
     region.initialize();
-    region.getSequenceId().set(0);
+    // region.getSequenceId().set(0);
 
     //make an attempted write to the primary that should also be indexed
     byte[] rowkey = Bytes.toBytes("indexed_row_key");

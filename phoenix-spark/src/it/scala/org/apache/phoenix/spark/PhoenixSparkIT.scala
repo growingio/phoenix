@@ -16,13 +16,14 @@ package org.apache.phoenix.spark
 import java.sql.{Connection, DriverManager}
 import java.util.Date
 
-import org.apache.hadoop.hbase.{HConstants}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.hbase.HConstants
 import org.apache.phoenix.end2end.BaseHBaseManagedTimeIT
 import org.apache.phoenix.query.BaseTest
-import org.apache.phoenix.schema.{ColumnNotFoundException}
+import org.apache.phoenix.schema.ColumnNotFoundException
 import org.apache.phoenix.schema.types.PVarchar
-import org.apache.phoenix.util.{SchemaUtil, ColumnInfo}
-import org.apache.spark.sql.{Row, SaveMode, SQLContext}
+import org.apache.phoenix.util.{ColumnInfo, SchemaUtil}
+import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.apache.spark.sql.types._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.DateTime
@@ -391,7 +392,7 @@ class PhoenixSparkIT extends FunSuite with Matchers with BeforeAndAfterAll {
       "zkUrl" -> quorumAddress))
 
     // Save to TABLE21_COPY
-    df.save("org.apache.phoenix.spark", SaveMode.Overwrite, Map("table" -> "TABLE1_COPY", "zkUrl" -> quorumAddress))
+    df.saveToPhoenix("TABLE1_COPY", new Configuration, Some(quorumAddress))
 
     // Verify results
     stmt = conn.createStatement()
