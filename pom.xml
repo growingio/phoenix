@@ -61,7 +61,7 @@
     <repository>
       <id>growing-release</id>
       <name>GrowingIO Release</name>
-      <url>http://54.223.132.19:8081/nexus/content/groups/public</url>
+      <url>http://10.0.1.190:8081/nexus/content/groups/public</url>
     </repository>
   </repositories>
 
@@ -75,7 +75,7 @@
   <distributionManagement>
     <repository>
       <id>releases</id>
-      <url>http://54.223.132.19:8081/nexus/content/repositories/releases</url>
+      <url>http://10.0.1.190:8081/nexus/content/repositories/releases</url>
     </repository>
   </distributionManagement>
 
