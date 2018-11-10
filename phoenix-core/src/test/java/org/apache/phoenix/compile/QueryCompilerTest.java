@@ -17,26 +17,6 @@
  */
 package org.apache.phoenix.compile;
 
-import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
-import static org.apache.phoenix.util.TestUtil.assertDegenerate;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
-
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
@@ -58,18 +38,17 @@ import org.apache.phoenix.jdbc.PhoenixStatement;
 import org.apache.phoenix.query.BaseConnectionlessQueryTest;
 import org.apache.phoenix.query.QueryConstants;
 import org.apache.phoenix.query.QueryServices;
-import org.apache.phoenix.schema.AmbiguousColumnException;
-import org.apache.phoenix.schema.ColumnAlreadyExistsException;
-import org.apache.phoenix.schema.ColumnNotFoundException;
-import org.apache.phoenix.schema.PColumn;
-import org.apache.phoenix.schema.PTableKey;
-import org.apache.phoenix.util.ByteUtil;
-import org.apache.phoenix.util.PhoenixRuntime;
-import org.apache.phoenix.util.PropertiesUtil;
-import org.apache.phoenix.util.QueryUtil;
-import org.apache.phoenix.util.ScanUtil;
-import org.apache.phoenix.util.SchemaUtil;
+import org.apache.phoenix.schema.*;
+import org.apache.phoenix.util.*;
 import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.sql.*;
+import java.util.*;
+
+import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
+import static org.apache.phoenix.util.TestUtil.assertDegenerate;
+import static org.junit.Assert.*;
 
 
 
@@ -1347,7 +1326,7 @@ public class QueryCompilerTest extends BaseConnectionlessQueryTest {
                 compileQuery(query, binds);
                 fail("Compilation should have failed since this is an invalid usage of NEXT VALUE FOR: " + query);
             } catch (SQLException e) {
-                assertEquals(SQLExceptionCode.INVALID_USE_OF_NEXT_VALUE_FOR.getErrorCode(), e.getErrorCode());
+                assertEquals(query, SQLExceptionCode.INVALID_USE_OF_NEXT_VALUE_FOR.getErrorCode(), e.getErrorCode());
             }
         }
     }
@@ -1812,6 +1791,39 @@ public class QueryCompilerTest extends BaseConnectionlessQueryTest {
                 "SELECT 1 FROM T GROUP BY CAST(k1 AS TIMESTAMP)",
                 "SELECT 1 FROM T GROUP BY (k1,k2,k3)",
                 "SELECT 1 FROM T GROUP BY TRUNC(k2, 'DAY'), CEIL(k1, 'HOUR')",
+                };
+        String query;
+        for (int i = 0; i < queries.length; i++) {
+            query = queries[i];
+            QueryPlan plan = conn.createStatement().unwrap(PhoenixStatement.class).compileQuery(query);
+            assertTrue("Expected group by to be order preserving: " + query, plan.getGroupBy().isOrderPreserving());
+        }
+    }
+    
+    @Test
+    public void testGroupByOrderPreserving2() throws Exception {
+        Connection conn = DriverManager.getConnection(getUrl());
+        conn.createStatement().execute("CREATE TABLE T (ORGANIZATION_ID char(15) not null, \n" + 
+                "JOURNEY_ID char(15) not null, \n" + 
+                "DATASOURCE SMALLINT not null, \n" + 
+                "MATCH_STATUS TINYINT not null, \n" + 
+                "EXTERNAL_DATASOURCE_KEY varchar(30), \n" + 
+                "ENTITY_ID char(15) not null, \n" + 
+                "CONSTRAINT PK PRIMARY KEY (\n" + 
+                "    ORGANIZATION_ID, \n" + 
+                "    JOURNEY_ID, \n" + 
+                "    DATASOURCE, \n" + 
+                "    MATCH_STATUS,\n" + 
+                "    EXTERNAL_DATASOURCE_KEY,\n" + 
+                "    ENTITY_ID))");
+        String[] queries = {
+                "SELECT COUNT(1) As DUP_COUNT\n" + 
+                "    FROM T \n" + 
+                "   WHERE JOURNEY_ID='07ixx000000004J' AND \n" + 
+                "                 DATASOURCE=0 AND MATCH_STATUS <= 1 and \n" + 
+                "                 ORGANIZATION_ID='07ixx000000004J' \n" + 
+                "    GROUP BY MATCH_STATUS, EXTERNAL_DATASOURCE_KEY \n" + 
+                "    HAVING COUNT(1) > 1",
                 };
         String query;
         for (int i = 0; i < queries.length; i++) {

@@ -17,14 +17,8 @@
  */
 package org.apache.phoenix.compile;
 
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Pair;
 import org.apache.phoenix.compile.GroupByCompiler.GroupBy;
@@ -32,18 +26,9 @@ import org.apache.phoenix.compile.JoinCompiler.JoinSpec;
 import org.apache.phoenix.compile.JoinCompiler.JoinTable;
 import org.apache.phoenix.compile.JoinCompiler.Table;
 import org.apache.phoenix.compile.OrderByCompiler.OrderBy;
-import org.apache.phoenix.execute.AggregatePlan;
-import org.apache.phoenix.execute.ClientAggregatePlan;
-import org.apache.phoenix.execute.ClientScanPlan;
-import org.apache.phoenix.execute.HashJoinPlan;
+import org.apache.phoenix.execute.*;
 import org.apache.phoenix.execute.HashJoinPlan.HashSubPlan;
 import org.apache.phoenix.execute.HashJoinPlan.WhereClauseSubPlan;
-import org.apache.phoenix.execute.LiteralResultIterationPlan;
-import org.apache.phoenix.execute.ScanPlan;
-import org.apache.phoenix.execute.SortMergeJoinPlan;
-import org.apache.phoenix.execute.TupleProjectionPlan;
-import org.apache.phoenix.execute.TupleProjector;
-import org.apache.phoenix.execute.UnionPlan;
 import org.apache.phoenix.expression.Expression;
 import org.apache.phoenix.expression.LiteralExpression;
 import org.apache.phoenix.expression.RowValueConstructorExpression;
@@ -53,29 +38,16 @@ import org.apache.phoenix.jdbc.PhoenixConnection;
 import org.apache.phoenix.jdbc.PhoenixDatabaseMetaData;
 import org.apache.phoenix.jdbc.PhoenixStatement;
 import org.apache.phoenix.join.HashJoinInfo;
-import org.apache.phoenix.parse.AliasedNode;
-import org.apache.phoenix.parse.EqualParseNode;
+import org.apache.phoenix.parse.*;
 import org.apache.phoenix.parse.HintNode.Hint;
 import org.apache.phoenix.parse.JoinTableNode.JoinType;
-import org.apache.phoenix.parse.OrderByNode;
-import org.apache.phoenix.parse.ParseNode;
-import org.apache.phoenix.parse.ParseNodeFactory;
-import org.apache.phoenix.parse.SQLParser;
-import org.apache.phoenix.parse.SelectStatement;
-import org.apache.phoenix.parse.SubqueryParseNode;
-import org.apache.phoenix.parse.TableNode;
-import org.apache.phoenix.parse.UDFParseNode;
 import org.apache.phoenix.query.QueryConstants;
-import org.apache.phoenix.schema.AmbiguousColumnException;
-import org.apache.phoenix.schema.ColumnNotFoundException;
-import org.apache.phoenix.schema.PDatum;
-import org.apache.phoenix.schema.PTable;
-import org.apache.phoenix.schema.TableNotFoundException;
-import org.apache.phoenix.schema.TableRef;
+import org.apache.phoenix.schema.*;
 import org.apache.phoenix.util.ScanUtil;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.*;
 
 
 /**
@@ -530,7 +502,7 @@ public class QueryCompiler {
         }
         Integer limit = LimitCompiler.compile(context, select);
 
-        GroupBy groupBy = GroupByCompiler.compile(context, select, innerPlanTupleProjector, isInRowKeyOrder);
+        GroupBy groupBy = GroupByCompiler.compile(context, select, isInRowKeyOrder);
         // Optimize the HAVING clause by finding any group by expressions that can be moved
         // to the WHERE clause
         select = HavingCompiler.rewrite(context, select, groupBy);
@@ -542,6 +514,9 @@ public class QueryCompiler {
         }
         Set<SubqueryParseNode> subqueries = Sets.<SubqueryParseNode> newHashSet();
         Expression where = WhereCompiler.compile(context, select, viewWhere, subqueries);
+        // Recompile GROUP BY now that we've figured out our ScanRanges so we know
+        // definitively whether or not we'll traverse in row key order.
+        groupBy = groupBy.compile(context, innerPlanTupleProjector);
         context.setResolver(resolver); // recover resolver
         RowProjector projector = ProjectionCompiler.compile(context, select, groupBy, asSubquery ? Collections.<PDatum>emptyList() : targetColumns, where);
         OrderBy orderBy = OrderByCompiler.compile(context, select, groupBy, limit, projector, groupBy == GroupBy.EMPTY_GROUP_BY ? innerPlanTupleProjector : null, isInRowKeyOrder); 
