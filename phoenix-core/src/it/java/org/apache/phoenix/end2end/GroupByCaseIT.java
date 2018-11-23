@@ -17,23 +17,16 @@
  */
 package org.apache.phoenix.end2end;
 
-import static org.apache.phoenix.util.TestUtil.GROUPBYTEST_NAME;
-import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-
+import org.apache.phoenix.schema.AmbiguousColumnException;
 import org.apache.phoenix.util.PropertiesUtil;
 import org.junit.Test;
+
+import java.sql.*;
+import java.util.Properties;
+
+import static org.apache.phoenix.util.TestUtil.GROUPBYTEST_NAME;
+import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
+import static org.junit.Assert.*;
 
 
 public class GroupByCaseIT extends BaseHBaseManagedTimeIT {
@@ -259,6 +252,42 @@ public class GroupByCaseIT extends BaseHBaseManagedTimeIT {
         assertEquals(100, rs.getInt(1));
         assertEquals(10, rs.getLong(2));
         assertFalse(rs.next());
+        conn.close();
+    }
+
+
+    @Test
+    public void testGroupByWithAliasWithSameColumnName() throws SQLException {
+        Properties props = PropertiesUtil.deepCopy(TEST_PROPERTIES);
+        Connection conn = DriverManager.getConnection(getUrl(), props);
+        String ddl = "create table test3 (pk integer primary key, col integer)";
+        conn.createStatement().execute(ddl);
+        ddl = "create table test4 (pk integer primary key, col integer)";
+        conn.createStatement().execute(ddl);
+        ddl = "create table test5 (notPk integer primary key, col integer)";
+        conn.createStatement().execute(ddl);
+        conn.createStatement().execute("UPSERT INTO test3 VALUES (1,2)");
+        conn.createStatement().execute("UPSERT INTO test4 VALUES (1,2)");
+        conn.createStatement().execute("UPSERT INTO test5 VALUES (1,2)");
+        conn.createStatement().executeQuery("select test3.pk as pk from test3 group by pk");
+        conn.createStatement().executeQuery("select test3.pk as pk from test3 group by test3.pk");
+        conn.createStatement().executeQuery("select test3.pk as pk from test3 as t group by t.pk");
+        conn.createStatement().executeQuery("select test3.col as pk from test3");
+        conn.createStatement()
+                .executeQuery("select test3.pk as pk from test3 join test5 on (test3.pk=test5.notPk) group by pk");
+        try {
+            conn.createStatement().executeQuery("select test3.col as pk from test3 group by pk");
+            fail();
+        } catch (AmbiguousColumnException e) {}
+        try {
+            conn.createStatement().executeQuery("select col as pk from test3 group by pk");
+            fail();
+        } catch (AmbiguousColumnException e) {}
+        try {
+            conn.createStatement()
+                    .executeQuery("select test3.pk as pk from test3 join test4 on (test3.pk=test4.pk) group by pk");
+            fail();
+        } catch (AmbiguousColumnException e) {}
         conn.close();
     }
 }
