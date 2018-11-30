@@ -1,5 +1,8 @@
 version 4.7.0-GIO2.1.5
 - add BUCKET_BITMAP_MERGE2, CBITMAP_MERGE2, SBITMAP_MERGE2
 
+version 4.7.0-GIO2.1.4.1
+- merge PHOENIX-2930: Cannot resolve columns aliased to its own name
+
 version 4.7.0-GIO2.1.4
 - fix bug: PHOENIX-2758
