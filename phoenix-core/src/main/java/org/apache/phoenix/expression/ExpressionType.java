@@ -215,7 +215,10 @@ public enum ExpressionType {
     CollationKeyFunction(CollationKeyFunction.class),
     ArrayRemoveFunction(ArrayRemoveFunction.class),
     TransactionProviderNameFunction(TransactionProviderNameFunction.class),
-    StringMergeFunction(StringMergeFunction.class)
+    StringMergeFunction(StringMergeFunction.class),
+    BucketBitMapMergeFunction2(BucketBitMapMergeFunction2.class),
+    CBitMapMergeFunction2(CBitMapMergeFunction2.class),
+    SBitMapMergeFunction2(SBitMapMergeFunction2.class)
     ;
 
     ExpressionType(Class<? extends Expression> clazz) {
