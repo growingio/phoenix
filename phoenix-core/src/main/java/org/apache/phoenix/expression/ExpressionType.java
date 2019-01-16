@@ -199,7 +199,10 @@ public enum ExpressionType {
     FloorYearExpression(FloorYearExpression.class),
     CeilWeekExpression(CeilWeekExpression.class),
     CeilMonthExpression(CeilMonthExpression.class),
-    CeilYearExpression(CeilYearExpression.class);
+    CeilYearExpression(CeilYearExpression.class),
+    BucketBitMapMergeFunction2(BucketBitMapMergeFunction2.class),
+    CBitMapMergeFunction2(CBitMapMergeFunction2.class),
+    SBitMapMergeFunction2(SBitMapMergeFunction2.class);
 
     ExpressionType(Class<? extends Expression> clazz) {
         this.clazz = clazz;

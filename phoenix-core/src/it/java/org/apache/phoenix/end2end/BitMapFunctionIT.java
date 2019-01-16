@@ -331,6 +331,54 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
     }
 
     @Test
+    public void testBucketBitMapMerge2() throws Exception {
+        String query = "select bucket_bitmap_merge2(bm, rid) " +
+                "from " +
+                "(select bm,0 rid from test_bucket_bm1 " +
+                "union all " +
+                "select bm,1 rid from test_bucket_bm2)";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            BucketBitMap bbm = new BucketBitMap(rs.getBytes(1));
+            assertEquals(bbm.getCount(), 3, 0);
+        }
+
+        // 一条数据时，server aggregator 不进行序列化和反序列
+        String query2 = "select bucket_bitmap_merge2(bm, 0) from test_bucket_bm1";
+        Statement stmt2 = conn.createStatement();
+        ResultSet rs2 = stmt2.executeQuery(query2);
+        while (rs2.next()) {
+            BucketBitMap bbm = new BucketBitMap(rs2.getBytes(1));
+            assertEquals(bbm.getCount(), 2, 0);
+        }
+    }
+
+    @Test
+    public void testCBitMapMerge2() throws Exception {
+        String query = "select cbitmap_merge2(bm, rid) " +
+                "from " +
+                "(select bm,0 rid from test_cbm1 " +
+                "union all " +
+                "select bm,1 rid from test_cbm2)";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            CBitMap cbm = new CBitMap(rs.getBytes(1));
+            assertEquals(cbm.getCount(), 10, 0);
+        }
+
+        // 一条数据时，server aggregator 不进行序列化和反序列
+        String query2 = "select cbitmap_merge2(bm, 0) from test_cbm1";
+        Statement stmt2 = conn.createStatement();
+        ResultSet rs2 = stmt2.executeQuery(query2);
+        while (rs2.next()) {
+            CBitMap cbm = new CBitMap(rs2.getBytes(1));
+            assertEquals(cbm.getCount(), 5, 0);
+        }
+    }
+
+    @Test
     public void testBucketBitMapCount() throws SQLException {
         String query = "select bucket_bitmap_count(bm) from test_bucket_bm3";
         Statement stmt = conn.createStatement();
