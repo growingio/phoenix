@@ -47,7 +47,7 @@
     <repository>
       <id>growing-release</id>
       <name>GrowingIO Release</name>
-      <url>http://54.223.132.19:8081/nexus/content/groups/public</url>
+      <url>http://http://52.80.121.32/:8081/nexus/content/groups/public</url>
     </repository>
   </repositories>
 
@@ -145,7 +145,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
    <curator.version>2.12.0</curator.version>
 
-    <bitmap.version>0.6.26-GIO1.8.3</bitmap.version>
+    <bitmap.version>0.6.26-GIO1.8.11</bitmap.version>
 
   </properties>
 
