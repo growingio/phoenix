@@ -47,7 +47,7 @@
     <repository>
       <id>growing-release</id>
       <name>GrowingIO Release</name>
-      <url>http://http://52.80.121.32/:8081/nexus/content/groups/public</url>
+      <url>http://52.80.121.32:8081/nexus/content/groups/public</url>
     </repository>
   </repositories>
 
@@ -67,8 +67,8 @@
 
   <distributionManagement>
     <repository>
-      <id>releases</id>
-      <url>http://54.223.132.19:8081/nexus/content/repositories/releases</url>
+      <id>gio</id>
+      <url>http://52.80.121.32:8081/nexus/content/repositories/releases</url>
     </repository>
   </distributionManagement>
 
@@ -80,7 +80,7 @@
     <top.dir>${project.basedir}</top.dir>
 
     <!-- Hadoop Versions -->
-    <hbase.version>1.2.11</hbase.version>
+    <hbase.version>1.2.11-GIO1.0.0</hbase.version>
     <hadoop-two.version>2.7.7</hadoop-two.version>
 
     <!-- Dependency versions -->
