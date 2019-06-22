@@ -17,23 +17,6 @@
  */
 package org.apache.phoenix.end2end;
 
-import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.apache.phoenix.util.TestUtil.assertResultSet;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-import java.util.Properties;
-
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.phoenix.compile.QueryPlan;
 import org.apache.phoenix.jdbc.PhoenixConnection;
@@ -48,6 +31,15 @@ import org.apache.phoenix.util.PropertiesUtil;
 import org.apache.phoenix.util.QueryUtil;
 import org.apache.phoenix.util.TestUtil;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.sql.*;
+import java.util.List;
+import java.util.Properties;
+
+import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
+import static org.apache.phoenix.util.TestUtil.assertResultSet;
+import static org.junit.Assert.*;
 
 
 public class AggregateIT extends ParallelStatsDisabledIT {
@@ -298,6 +290,26 @@ public class AggregateIT extends ParallelStatsDisabledIT {
         assertTrue(rs.next());
         assertEquals(100, rs.getInt(1));
         assertEquals(10, rs.getLong(2));
+        assertFalse(rs.next());
+        conn.close();
+    }
+
+    @Test
+    public void testGroupByWithAliasWithSameColumnNameGio() throws SQLException {
+        Properties props = PropertiesUtil.deepCopy(TEST_PROPERTIES);
+        Connection conn = DriverManager.getConnection(getUrl(), props);
+        String ddl = "create table test3 (pk integer primary key, col VARCHAR)";
+        conn.createStatement().execute(ddl);
+        conn.createStatement().execute("UPSERT INTO test3 VALUES (1,'a')");
+        conn.createStatement().execute("UPSERT INTO test3 VALUES (3,'b')");
+        conn.commit();
+
+        String s = "select case when col='a' then null else pk end pk from test3  group by pk";
+        ResultSet rs = conn.createStatement().executeQuery(s);
+        assertTrue(rs.next());
+        assert(null == rs.getObject(1));
+        assertTrue(rs.next());
+        assertEquals(3, rs.getInt(1));
         assertFalse(rs.next());
         conn.close();
     }
