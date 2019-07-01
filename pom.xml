@@ -45,7 +45,7 @@
       <url>https://repository.apache.org/content/repositories/releases/</url>
     </repository>
     <repository>
-      <id>growing-release</id>
+      <id>giomaven</id>
       <name>GrowingIO Release</name>
       <url>http://52.80.121.32:8081/nexus/content/groups/public</url>
     </repository>
@@ -67,7 +67,7 @@
 
   <distributionManagement>
     <repository>
-      <id>gio</id>
+      <id>giomaven</id>
       <url>http://52.80.121.32:8081/nexus/content/repositories/releases</url>
     </repository>
   </distributionManagement>

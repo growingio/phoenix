@@ -25,9 +25,9 @@ import org.apache.phoenix.expression.aggregator.Aggregator;
 import org.apache.phoenix.expression.aggregator.gio.RBitMapMergeAggregator;
 import org.apache.phoenix.expression.function.CountAggregateFunction;
 import org.apache.phoenix.expression.function.DelegateConstantToCountAggregateFunction;
-import org.apache.phoenix.parse.gio.CBitMapMergeAggregateParseNode;
 import org.apache.phoenix.parse.FunctionParseNode.Argument;
 import org.apache.phoenix.parse.FunctionParseNode.BuiltInFunction;
+import org.apache.phoenix.parse.gio.RBitMapMergeAggregateParseNode;
 import org.apache.phoenix.schema.SortOrder;
 import org.apache.phoenix.schema.tuple.Tuple;
 import org.apache.phoenix.schema.types.PDataType;
@@ -41,7 +41,7 @@ import java.util.List;
  *
  * @since 0.1
  */
-@BuiltInFunction(name = RBitMapMergeFunction.NAME, nodeClass = CBitMapMergeAggregateParseNode.class,
+@BuiltInFunction(name = RBitMapMergeFunction.NAME, nodeClass = RBitMapMergeAggregateParseNode.class,
         args = {@Argument(allowedTypes = {PVarbinary.class})})
 public class RBitMapMergeFunction extends DelegateConstantToCountAggregateFunction {
     public static final String NAME = "RBITMAP_MERGE";
