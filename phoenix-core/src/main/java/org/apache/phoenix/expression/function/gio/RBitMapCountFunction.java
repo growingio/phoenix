@@ -25,7 +25,6 @@ import org.apache.phoenix.parse.FunctionParseNode.Argument;
 import org.apache.phoenix.parse.FunctionParseNode.BuiltInFunction;
 import org.apache.phoenix.schema.tuple.Tuple;
 import org.apache.phoenix.schema.types.PDataType;
-import org.apache.phoenix.schema.types.PInteger;
 import org.apache.phoenix.schema.types.PLong;
 import org.apache.phoenix.schema.types.PVarbinary;
 
@@ -56,7 +55,7 @@ public class RBitMapCountFunction extends ScalarFunction {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            byte[] lengthBuf = new byte[PInteger.INSTANCE.getByteSize()];
+            byte[] lengthBuf = new byte[PLong.INSTANCE.getByteSize()];
             RoaringBitmap bitmap = new RoaringBitmap();
             if (children.get(0).evaluate(tuple, ptr)) {
                 bitmap.deserialize(new DataInputStream(new ByteArrayInputStream(ptr.copyBytes())));
