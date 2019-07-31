@@ -1065,4 +1065,71 @@ public class UnionAllIT extends ParallelStatsDisabledIT {
             conn.close();
         }
     }
+
+    @Test
+    public void testUnion() throws Exception {
+        Properties props = PropertiesUtil.deepCopy(TEST_PROPERTIES);
+        Connection conn = DriverManager.getConnection(getUrl(), props);
+        String tableName = " user_props ";
+        String ddl = " create table " + tableName + "(csid varchar primary key, dim varchar, dvalue varchar)";
+
+        createTestTable(getUrl(), ddl);
+        PreparedStatement stmt = conn.prepareStatement("UPSERT INTO " + tableName + "(csid,dim,dvalue) VALUES(?,?,?)");
+        stmt.setString(1, "a");
+        stmt.setString(2, "ppl_peopleMainsiteCenter");
+        stmt.setString(3, "4");
+        stmt.execute();
+        stmt.close();
+        stmt = conn.prepareStatement("UPSERT INTO " + tableName + " VALUES(?,?,?)");
+        stmt.setString(1, "b");
+        stmt.setString(2, "ppl_peopleMainsiteCenter");
+        stmt.setString(3, "4");
+        stmt.execute();
+        stmt.setString(1, "c");
+        stmt.setString(2, "ppl_peopleMainsiteCenter");
+        stmt.setString(3, "4");
+        stmt.execute();
+        conn.commit();
+
+        String lstable = " id_cs1_mapping ";
+        String ddl1 = " create table " + lstable + " (id varchar primary key,cs1 varchar)";
+        createTestTable(getUrl(), ddl1);
+        PreparedStatement stmt1 = conn.prepareStatement("UPSERT INTO " + lstable + "(id,cs1) VALUES(?,?)");
+        stmt1.setString(1, "a");
+        stmt1.setString(2, "11111");
+        stmt1.execute();
+        stmt1.setString(1, "b");
+        stmt1.setString(2, "22222");
+
+        stmt1.execute();
+        stmt1.setString(1, "c");
+        stmt1.setString(2, "3333");
+
+        stmt1.execute();
+        conn.commit();
+
+        String lsSql = " SELECT csid," +
+                "        (case     WHEN dim='ppl_peopleMainsiteCenter' THEN     dvalue    ELSE NULL end) ppl_peopleMainsiteCenter" +
+                " FROM " +
+                "    (" +
+                "    SELECT csid," +
+                "        dim," +
+                "        dvalue" +
+                "    FROM user_props" +
+
+                "    UNION all" +
+                "    SELECT id csid," +
+                "        'cs14' dim, cs1 dvalue" +
+                "    FROM id_cs1_mapping" +
+                "    ) t" ;
+
+        ResultSet res = conn.createStatement().executeQuery(lsSql);
+        while (res.next()){
+            String id = res.getString(1);
+            String dim = res.getString(2);
+            System.out.println(id + " - "+ dim );
+        }
+        res.close();
+        conn.close();
+    }
 }

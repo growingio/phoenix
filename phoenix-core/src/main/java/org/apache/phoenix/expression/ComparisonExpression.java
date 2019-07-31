@@ -49,7 +49,6 @@ import org.apache.phoenix.util.StringUtil;
 
 import com.google.common.collect.Lists;
 
-
 /**
  * 
  * Implementation for <,<=,>,>=,=,!= comparison expressions
@@ -245,7 +244,7 @@ public class ComparisonExpression extends BaseCompoundExpression {
 
             // Determine if we know the expression must be TRUE or FALSE based on the max size of
             // a fixed length expression.
-            if (children.get(1).getMaxLength() != null && lhsExpr.getMaxLength() != null && lhsExprDataType.isFixedWidth() && lhsExpr.getMaxLength() < children.get(1).getMaxLength() ) {
+            if (children.get(1).getMaxLength() != null && lhsExpr.getMaxLength() != null && true && lhsExpr.getMaxLength() < children.get(1).getMaxLength() ) {
                 switch (op) {
                 case EQUAL:
                     return LiteralExpression.newConstant(false, PBoolean.INSTANCE, determinism);
