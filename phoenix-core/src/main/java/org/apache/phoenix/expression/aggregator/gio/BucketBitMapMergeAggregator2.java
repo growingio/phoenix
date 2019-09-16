@@ -43,10 +43,6 @@ import java.util.Map;
 public class BucketBitMapMergeAggregator2 extends BaseAggregator {
     private List<Expression> children;
     private Map<Short, BucketBitMap> rid2Bbm = new HashMap<>();
-    // isFirst 避免只有一条数据时 仍然进行序列化和反序列的开销
-    private boolean isFirst = true;
-    private byte[] data = null;
-    private short ruleId = -1;
 
     public BucketBitMapMergeAggregator2(SortOrder sortOrder, ImmutableBytesWritable ptr, List<Expression> children) {
         super(sortOrder);
@@ -70,32 +66,18 @@ public class BucketBitMapMergeAggregator2 extends BaseAggregator {
 
     private void mergeValue(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            if (isFirst) {
-                if (!getChildren().get(0).evaluate(tuple, ptr)) return;
-                data = ptr.copyBytes();
-                Expression expr1 = getChildren().get(1);
-                if (!expr1.evaluate(tuple, ptr)) return;
-                ruleId = ((Integer) PInteger.INSTANCE.toObject(ptr, expr1.getSortOrder())).shortValue();
-                isFirst = false;
+            Expression expr0 = getChildren().get(0);
+            if (!expr0.evaluate(tuple, ptr)) return;
+            BucketBitMap bbm = new BucketBitMap(ptr.copyBytes());
+
+            Expression expr1 = getChildren().get(1);
+            if (!expr1.evaluate(tuple, ptr)) return;
+            short rid = ((Integer) PInteger.INSTANCE.toObject(ptr, expr1.getSortOrder())).shortValue();
+
+            if (!rid2Bbm.containsKey(rid)) {
+                rid2Bbm.put(rid, bbm);
             } else {
-                if (data != null) {
-                    rid2Bbm.put(ruleId, new BucketBitMap(data));
-                    data = null;
-                }
-
-                Expression expr0 = getChildren().get(0);
-                if (!expr0.evaluate(tuple, ptr)) return;
-                BucketBitMap bbm = new BucketBitMap(ptr.copyBytes());
-
-                Expression expr1 = getChildren().get(1);
-                if (!expr1.evaluate(tuple, ptr)) return;
-                short rid = ((Integer) PInteger.INSTANCE.toObject(ptr, expr1.getSortOrder())).shortValue();
-
-                if (!rid2Bbm.containsKey(rid)) {
-                    rid2Bbm.put(rid, bbm);
-                } else {
-                    rid2Bbm.get(rid).or(bbm);
-                }
+                rid2Bbm.get(rid).or(bbm);
             }
         } catch (Exception e) {
             throw new RuntimeException("gio unexpected exception", e);
@@ -106,12 +88,8 @@ public class BucketBitMapMergeAggregator2 extends BaseAggregator {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            if (data != null) {
-                ptr.set(data, 0, data.length);
-            } else {
-                byte[] bmBytes = evaluateValue().getBytes();
-                ptr.set(bmBytes, 0, bmBytes.length);
-            }
+            byte[] bmBytes = evaluateValue().getBytes();
+            ptr.set(bmBytes, 0, bmBytes.length);
         } catch (IOException e) {
             throw new RuntimeException("gio unexpected exception", e);
         }
@@ -141,9 +119,6 @@ public class BucketBitMapMergeAggregator2 extends BaseAggregator {
     @Override
     public void reset() {
         rid2Bbm.clear();
-        isFirst = true;
-        data = null;
-        ruleId = -1;
         super.reset();
     }
 

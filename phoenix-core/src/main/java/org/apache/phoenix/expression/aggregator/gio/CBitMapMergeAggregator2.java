@@ -44,10 +44,6 @@ import java.util.Map;
 public class CBitMapMergeAggregator2 extends BaseAggregator {
     private List<Expression> children;
     private Map<Short, CBitMap> rid2Cbm = new HashMap<>();
-    // isFirst 避免只有一条数据时 仍然进行序列化和反序列的开销
-    private boolean isFirst = true;
-    private byte[] data = null;
-    private short ruleId = -1;
 
     public CBitMapMergeAggregator2(SortOrder sortOrder, ImmutableBytesWritable ptr, List<Expression> children) {
         super(sortOrder);
@@ -70,32 +66,18 @@ public class CBitMapMergeAggregator2 extends BaseAggregator {
 
     private void mergeValue(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            if (isFirst) {
-                if (!getChildren().get(0).evaluate(tuple, ptr)) return;
-                data = ptr.copyBytes();
-                Expression expr1 = getChildren().get(1);
-                if (!expr1.evaluate(tuple, ptr)) return;
-                ruleId = ((Integer) PInteger.INSTANCE.toObject(ptr, expr1.getSortOrder())).shortValue();
-                isFirst = false;
+            Expression expr0 = getChildren().get(0);
+            if (!expr0.evaluate(tuple, ptr)) return;
+            CBitMap cbm = new CBitMap(ptr.copyBytes());
+
+            Expression expr1 = getChildren().get(1);
+            if (!expr1.evaluate(tuple, ptr)) return;
+            short rid = ((Integer) PInteger.INSTANCE.toObject(ptr, expr1.getSortOrder())).shortValue();
+
+            if (!rid2Cbm.containsKey(rid)) {
+                rid2Cbm.put(rid, cbm);
             } else {
-                if (data != null) {
-                    rid2Cbm.put(ruleId, new CBitMap(data));
-                    data = null;
-                }
-
-                Expression expr0 = getChildren().get(0);
-                if (!expr0.evaluate(tuple, ptr)) return;
-                CBitMap cbm = new CBitMap(ptr.copyBytes());
-
-                Expression expr1 = getChildren().get(1);
-                if (!expr1.evaluate(tuple, ptr)) return;
-                short rid = ((Integer) PInteger.INSTANCE.toObject(ptr, expr1.getSortOrder())).shortValue();
-
-                if (!rid2Cbm.containsKey(rid)) {
-                    rid2Cbm.put(rid, cbm);
-                } else {
-                    rid2Cbm.get(rid).or(cbm);
-                }
+                rid2Cbm.get(rid).or(cbm);
             }
         } catch (Exception e) {
             throw new RuntimeException("gio unexpected exception", e);
@@ -106,12 +88,8 @@ public class CBitMapMergeAggregator2 extends BaseAggregator {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         try {
-            if (data != null) {
-                ptr.set(data, 0, data.length);
-            } else {
-                byte[] bmBytes = evaluateValue().getBytes();
-                ptr.set(bmBytes, 0, bmBytes.length);
-            }
+            byte[] bmBytes = evaluateValue().getBytes();
+            ptr.set(bmBytes, 0, bmBytes.length);
             return true;
         } catch (IOException e) {
             throw new RuntimeException("gio unexpected exception", e);
@@ -152,9 +130,6 @@ public class CBitMapMergeAggregator2 extends BaseAggregator {
     @Override
     public void reset() {
         rid2Cbm.clear();
-        isFirst = true;
-        data = null;
-        ruleId = -1;
         super.reset();
     }
 
