@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.phoenix</groupId>
   <artifactId>phoenix</artifactId>
-  <version>4.14.1-HBase-1.2-GIO-2.1.5</version>
+  <version>4.14.1-HBase-1.2-GIO-2.1.6</version>
   <packaging>pom</packaging>
   <name>Apache Phoenix</name>
   <description>A SQL layer over HBase</description>
@@ -45,9 +45,12 @@
       <url>https://repository.apache.org/content/repositories/releases/</url>
     </repository>
     <repository>
-      <id>giomaven</id>
+      <id>gio-repo</id>
       <name>GrowingIO Release</name>
-      <url>http://52.80.121.32:8081/nexus/content/groups/public</url>
+      <url>https://nexus.growingio.com/repository/maven-public/</url>
+      <snapshots>
+          <enabled>true</enabled>
+      </snapshots>
     </repository>
   </repositories>
 
@@ -67,9 +70,13 @@
 
   <distributionManagement>
     <repository>
-      <id>giomaven</id>
-      <url>http://52.80.121.32:8081/nexus/content/repositories/releases</url>
+      <id>gio</id>
+      <url>https://nexus.growingio.com/repository/maven-releases/</url>
     </repository>
+    <snapshotRepository>
+      <id>gio-snapshots</id>
+      <url>https://nexus.growingio.com/repository/maven-snapshots/</url>
+    </snapshotRepository>
   </distributionManagement>
 
   <properties>
