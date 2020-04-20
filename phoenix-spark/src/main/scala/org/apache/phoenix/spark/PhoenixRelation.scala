@@ -26,7 +26,7 @@ import org.apache.phoenix.util.StringUtil.escapeStringConstant
 import org.apache.phoenix.util.SchemaUtil
 
 case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Boolean = false)(@transient val sqlContext: SQLContext)
-    extends BaseRelation with PrunedFilteredScan {
+  extends BaseRelation with PrunedFilteredScan {
 
   /*
     This is the buildScan() implementing Spark's PrunedFilteredScan.
@@ -67,14 +67,14 @@ case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Bo
       return ""
     }
 
-//    val filter = new StringBuilder("")
-//    var i = 0
+    //    val filter = new StringBuilder("")
+    //    var i = 0
 
     filters.map(f => {
       // Assume conjunction for multiple filters, unless otherwise specified
-//      if (i > 0) {
-//        (" AND")
-//      }
+      //      if (i > 0) {
+      //        (" AND")
+      //      }
 
       f match {
         // Spark 1.3.1+ supported filters
@@ -94,10 +94,10 @@ case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Bo
         case StringContains(attr, value) => (s" ${escapeKey(attr)} LIKE ${compileValue("%" + value + "%")}")
       }
 
-//      i = i + 1
+      //      i = i + 1
     }).mkString("(",") AND (",")")
 
-//     filter.toString()
+    //     filter.toString()
   }
 
   // Helper function to escape column key to work with SQL queries
@@ -105,13 +105,13 @@ case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Bo
 
   // Helper function to escape string values in SQL queries
   private def compileValue(value: Any): Any = value match {
-    case stringValue: String => s"'${escapeStringConstant(stringValue)}'"
+    case stringValue: String => escapeStringValue(stringValue)
 
     // Borrowed from 'elasticsearch-hadoop', support these internal UTF types across Spark versions
     // Spark 1.4
-    case utf if (isClass(utf, "org.apache.spark.sql.types.UTF8String")) => s"'${escapeStringConstant(utf.toString)}'"
+    case utf if (isClass(utf, "org.apache.spark.sql.types.UTF8String")) => escapeStringValue(utf.toString)
     // Spark 1.5
-    case utf if (isClass(utf, "org.apache.spark.unsafe.types.UTF8String")) => s"'${escapeStringConstant(utf.toString)}'"
+    case utf if (isClass(utf, "org.apache.spark.unsafe.types.UTF8String")) => escapeStringValue(utf.toString)
 
     // Pass through anything else
     case _ => value
@@ -120,4 +120,14 @@ case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Bo
   private def isClass(obj: Any, className: String) = {
     className.equals(obj.getClass().getName())
   }
+
+  private def escapeStringValue(content: String) = {
+    if (!content.contains("\\\'")) {
+      val escapeContent = content.replace("'", "''")
+      s"'$escapeContent'"
+    } else {
+      s"'${content.replace("\\\'", "\\\\\\\'")}'"
+    }
+  }
+
 }
