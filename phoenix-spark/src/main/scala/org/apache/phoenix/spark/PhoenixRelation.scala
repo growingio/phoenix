@@ -17,12 +17,12 @@
  */
 package org.apache.phoenix.spark
 
+import org.apache.commons.lang.StringEscapeUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.sources._
-import org.apache.phoenix.util.StringUtil.escapeStringConstant
 import org.apache.phoenix.util.SchemaUtil
 
 case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Boolean = false)(@transient val sqlContext: SQLContext)
@@ -122,11 +122,14 @@ case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Bo
   }
 
   private def escapeStringValue(content: String) = {
-    if (!content.contains("\\\'")) {
-      val escapeContent = content.replace("'", "''")
-      s"'$escapeContent'"
+    if (content == null) {
+      s"'$content'"
     } else {
-      s"'${content.replace("\\\'", "\\\\\\\'")}'"
+      var escapeString: String = content
+      if (!content.contains("\\\\\\'")) {
+        escapeString = escapeString.replace("'", "''")
+      }
+      s"'$escapeString'"
     }
   }
 }
