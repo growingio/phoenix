@@ -122,18 +122,9 @@ case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Bo
   }
 
   private def escapeStringValue(content: String) = {
-    if (content == null) {
-      s"'$content'"
-    } else {
-      var escapeString: String = content
-      if (!content.contains("\\\'")) {
-        escapeString = escapeString.replaceAll("'", "''")
-      } else {
-        escapeString = escapeString.replace("\\", "\\\\")
-        escapeString = escapeString.replace("\'", "\\'")
-      }
-      s"'$escapeString'"
-
+    content match {
+      case str if str != null => s"'${str.replace("\\", "\\\\").replace("'", "''")}'"
+      case _ => "'null'"
     }
   }
 }
