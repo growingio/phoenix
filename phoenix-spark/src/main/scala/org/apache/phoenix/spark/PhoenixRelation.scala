@@ -17,7 +17,7 @@
  */
 package org.apache.phoenix.spark
 
-import org.apache.commons.lang.StringEscapeUtils
+import org.apache.commons.lang.{StringEscapeUtils, StringUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType
@@ -126,10 +126,14 @@ case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Bo
       s"'$content'"
     } else {
       var escapeString: String = content
-      if (!content.contains("\\\\\\'")) {
-        escapeString = escapeString.replace("'", "''")
+      if (!content.contains("\\\'")) {
+        escapeString = escapeString.replaceAll("'", "''")
+      } else {
+        escapeString = escapeString.replace("\\", "\\\\")
+        escapeString = escapeString.replace("\'", "\\'")
       }
       s"'$escapeString'"
+
     }
   }
 }
