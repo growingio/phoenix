@@ -17,12 +17,12 @@
  */
 package org.apache.phoenix.spark
 
+import org.apache.commons.lang.{StringEscapeUtils, StringUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.sources._
-import org.apache.phoenix.util.StringUtil.escapeStringConstant
 import org.apache.phoenix.util.SchemaUtil
 
 case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Boolean = false)(@transient val sqlContext: SQLContext)
@@ -105,13 +105,13 @@ case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Bo
 
   // Helper function to escape string values in SQL queries
   private def compileValue(value: Any): Any = value match {
-    case stringValue: String => s"'${escapeStringConstant(stringValue)}'"
+    case stringValue: String => escapeStringValue(stringValue)
 
     // Borrowed from 'elasticsearch-hadoop', support these internal UTF types across Spark versions
     // Spark 1.4
-    case utf if (isClass(utf, "org.apache.spark.sql.types.UTF8String")) => s"'${escapeStringConstant(utf.toString)}'"
+    case utf if (isClass(utf, "org.apache.spark.sql.types.UTF8String")) => escapeStringValue(utf.toString)
     // Spark 1.5
-    case utf if (isClass(utf, "org.apache.spark.unsafe.types.UTF8String")) => s"'${escapeStringConstant(utf.toString)}'"
+    case utf if (isClass(utf, "org.apache.spark.unsafe.types.UTF8String")) => escapeStringValue(utf.toString)
 
     // Pass through anything else
     case _ => value
@@ -119,5 +119,12 @@ case class PhoenixRelation(tableName: String, zkUrl: String, dateAsTimestamp: Bo
 
   private def isClass(obj: Any, className: String) = {
     className.equals(obj.getClass().getName())
+  }
+
+  private def escapeStringValue(content: String) = {
+    content match {
+      case str if str != null => s"'${str.replace("\\", "\\\\").replace("'", "''")}'"
+      case _ => "'null'"
+    }
   }
 }
