@@ -23,8 +23,7 @@ import java.sql.*;
 import java.util.Properties;
 
 import static org.apache.phoenix.util.TestUtil.TEST_PROPERTIES;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
 
@@ -36,9 +35,10 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         conn = DriverManager.getConnection(getUrl(), props);
         conn.setAutoCommit(false);
 
-        createRbmTable();
-        createBucketBmTable();
-        createCbmTable();
+//        createRbmTable();
+//        createBucketBmTable();
+        createBucketBmTableForMerge();
+//        createCbmTable();
     }
 
     @After
@@ -154,6 +154,46 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         prepareStmt3.addBatch();
         prepareStmt3.executeBatch();
         prepareStmt3.close();
+
+        conn.commit();
+    }
+
+    private void createBucketBmTableForMerge() throws SQLException, IOException {
+        Statement stmt = conn.createStatement();
+
+        // create table
+        String create1 = "CREATE TABLE test_merge_bm1 (id INTEGER PRIMARY KEY, bm VARBINARY)";
+        String create2 = "CREATE TABLE test_merge_bm2 (id INTEGER PRIMARY KEY, bm VARBINARY)";
+        stmt.addBatch(create1);
+        stmt.addBatch(create2);
+        stmt.executeBatch();
+        stmt.close();
+
+        // insert data
+        String upsert1 = "upsert into test_merge_bm1 values (?,?)";
+        PreparedStatement prepareStmt1 = conn.prepareStatement(upsert1);
+        prepareStmt1.setInt(1, 1);
+        BucketBitMap bucketBm1 = new BucketBitMap();
+        bucketBm1.add((short) 0, 2);
+        bucketBm1.add((short) 1, 4);
+        bucketBm1.add((short) 256, 4);
+        prepareStmt1.setBytes(2, bucketBm1.getBytes());
+        prepareStmt1.addBatch();
+        prepareStmt1.executeBatch();
+        prepareStmt1.close();
+
+        String upsert2 = "upsert into test_merge_bm2 values (?,?)";
+        PreparedStatement prepareStmt2 = conn.prepareStatement(upsert2);
+        prepareStmt2.setInt(1, 1);
+        BucketBitMap bucketBm2 = new BucketBitMap();
+        bucketBm2.add((short) 0, 2);
+        bucketBm2.add((short) 1, 4);
+        bucketBm2.add((short) 256, 4);
+        bucketBm2.add((short) 511, 10);
+        prepareStmt2.setBytes(2, bucketBm2.getBytes());
+        prepareStmt2.addBatch();
+        prepareStmt2.executeBatch();
+        prepareStmt2.close();
 
         conn.commit();
     }
@@ -351,6 +391,56 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         while (rs2.next()) {
             BucketBitMap bbm = new BucketBitMap(rs2.getBytes(1));
             assertEquals(bbm.getCount(), 2, 0);
+        }
+    }
+
+    @Test
+    public void testBucketBitMapMerge3() throws Exception {
+        String query = "select bucket_bitmap_merge3(bm, rid, 2) " +
+                "from " +
+                "(select bm,0 rid from test_merge_bm1 " +
+                "union all " +
+                "select bm,1 rid from test_merge_bm2)";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            BucketBitMap bbm = new BucketBitMap(rs.getBytes(1));
+            assertEquals(bbm.getContainer().keySet().toArray().length, 7, 0);
+            assertEquals(bbm.getCount(), 3, 0);
+        }
+
+        // 一条数据时，server aggregator 不进行序列化和反序列
+        String query2 = "select bucket_bitmap_merge3(bm, 0, 1) from test_merge_bm1";
+        Statement stmt2 = conn.createStatement();
+        ResultSet rs2 = stmt2.executeQuery(query2);
+        while (rs2.next()) {
+            BucketBitMap bbm = new BucketBitMap(rs2.getBytes(1));
+            assertEquals(bbm.getCount(), 2, 0);
+        }
+    }
+
+    @Test
+    public void testBucketBitMapMerge3more128() throws Exception {
+        String query = "select bucket_bitmap_merge3(bm, rid, 128) " +
+                "from " +
+                "(select bm,0 rid from test_merge_bm1 " +
+                "union all " +
+                "select bm,1 rid from test_merge_bm2)";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            BucketBitMap bbm = new BucketBitMap(rs.getBytes(1));
+            assertNotEquals(bbm.getContainer().keySet().toArray().length, 7, 0);
+            assertEquals(bbm.getCount(), 2, 0);
+        }
+
+        // 一条数据时，server aggregator 不进行序列化和反序列
+        String query2 = "select bucket_bitmap_merge3(bm, 0, 128) from test_merge_bm1";
+        Statement stmt2 = conn.createStatement();
+        ResultSet rs2 = stmt2.executeQuery(query2);
+        while (rs2.next()) {
+            BucketBitMap bbm = new BucketBitMap(rs2.getBytes(1));
+            assertEquals(bbm.getCount(), 1, 0);
         }
     }
 

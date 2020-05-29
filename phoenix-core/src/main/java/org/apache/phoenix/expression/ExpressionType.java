@@ -217,6 +217,7 @@ public enum ExpressionType {
     TransactionProviderNameFunction(TransactionProviderNameFunction.class),
     StringMergeFunction(StringMergeFunction.class),
     BucketBitMapMergeFunction2(BucketBitMapMergeFunction2.class),
+    BucketBitMapMergeFunction3(BucketBitMapMergeFunction3.class),
     CBitMapMergeFunction2(CBitMapMergeFunction2.class),
     SBitMapMergeFunction2(SBitMapMergeFunction2.class)
     ;
