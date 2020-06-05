@@ -174,9 +174,9 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         PreparedStatement prepareStmt1 = conn.prepareStatement(upsert1);
         prepareStmt1.setInt(1, 1);
         BucketBitMap bucketBm1 = new BucketBitMap();
-        bucketBm1.add((short) 0, 2);
-        bucketBm1.add((short) 1, 4);
-        bucketBm1.add((short) 256, 4);
+        bucketBm1.add((short) 0, 1);
+        bucketBm1.add((short) 1, 2);
+        bucketBm1.add((short) 256, 3);
         prepareStmt1.setBytes(2, bucketBm1.getBytes());
         prepareStmt1.addBatch();
         prepareStmt1.executeBatch();
@@ -186,10 +186,10 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         PreparedStatement prepareStmt2 = conn.prepareStatement(upsert2);
         prepareStmt2.setInt(1, 1);
         BucketBitMap bucketBm2 = new BucketBitMap();
-        bucketBm2.add((short) 0, 2);
-        bucketBm2.add((short) 1, 4);
-        bucketBm2.add((short) 256, 4);
-        bucketBm2.add((short) 511, 10);
+        bucketBm2.add((short) 0, 1);
+        bucketBm2.add((short) 1, 2);
+        bucketBm2.add((short) 256, 3);
+        bucketBm2.add((short) 511, 4);
         prepareStmt2.setBytes(2, bucketBm2.getBytes());
         prepareStmt2.addBatch();
         prepareStmt2.executeBatch();
@@ -406,7 +406,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         while (rs.next()) {
             BucketBitMap bbm = new BucketBitMap(rs.getBytes(1));
             assertEquals(bbm.getContainer().keySet().toArray().length, 7, 0);
-            assertEquals(bbm.getCount(), 3, 0);
+            assertEquals(bbm.getCount(), 4, 0);
         }
 
         // 一条数据时，server aggregator 不进行序列化和反序列
@@ -415,7 +415,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         ResultSet rs2 = stmt2.executeQuery(query2);
         while (rs2.next()) {
             BucketBitMap bbm = new BucketBitMap(rs2.getBytes(1));
-            assertEquals(bbm.getCount(), 2, 0);
+            assertEquals(bbm.getCount(), 3, 0);
         }
     }
 
