@@ -469,6 +469,29 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
     }
 
     @Test
+    public void testCBitMapMerge3() throws Exception {
+        String query = "select cbitmap_merge3(bm, rid, 2) " +
+                "from " +
+                "(select bm,0 rid from test_cbm1 " +
+                "union all " +
+                "select bm,1 rid from test_cbm2)";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            CBitMap cbm = new CBitMap(rs.getBytes(1));
+            assertEquals(cbm.getCount(), 10, 0);
+        }
+
+        String query2 = "select cbitmap_merge3(bm, 0, 1) from test_cbm1";
+        Statement stmt2 = conn.createStatement();
+        ResultSet rs2 = stmt2.executeQuery(query2);
+        while (rs2.next()) {
+            CBitMap cbm = new CBitMap(rs2.getBytes(1));
+            assertEquals(cbm.getCount(), 5, 0);
+        }
+    }
+
+    @Test
     public void testBucketBitMapCount() throws SQLException {
         String query = "select bucket_bitmap_count(bm) from test_bucket_bm3";
         Statement stmt = conn.createStatement();

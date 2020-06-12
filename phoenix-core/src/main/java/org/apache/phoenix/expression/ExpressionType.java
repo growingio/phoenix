@@ -23,9 +23,6 @@ import org.apache.phoenix.expression.function.*;
 
 import com.google.common.collect.Maps;
 import org.apache.phoenix.expression.function.gio.*;
-import org.apache.phoenix.expression.function.*;
-
-import java.util.Map;
 
 /**
  *
@@ -219,7 +216,9 @@ public enum ExpressionType {
     BucketBitMapMergeFunction2(BucketBitMapMergeFunction2.class),
     BucketBitMapMergeFunction3(BucketBitMapMergeFunction3.class),
     CBitMapMergeFunction2(CBitMapMergeFunction2.class),
-    SBitMapMergeFunction2(SBitMapMergeFunction2.class)
+    CBitMapMergeFunction3(CBitMapMergeFunction3.class),
+    SBitMapMergeFunction2(SBitMapMergeFunction2.class),
+    SBitMapMergeFunction3(SBitMapMergeFunction3.class)
     ;
 
     ExpressionType(Class<? extends Expression> clazz) {
