@@ -95,6 +95,7 @@ public enum ExpressionType {
     UpperFunction(UpperFunction.class),
     LowerFunction(LowerFunction.class),
     TrimFunction(TrimFunction.class),
+    JsonStrGetValueFunction(JsonStrGetValueFunction.class),
     DistinctCountAggregateFunction(DistinctCountAggregateFunction.class),
     PercentileContAggregateFunction(PercentileContAggregateFunction.class),
     PercentRankAggregateFunction(PercentRankAggregateFunction.class),
