@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-@FunctionParseNode.BuiltInFunction(name= org.apache.phoenix.expression.function.LengthFunction.NAME, args={
+@FunctionParseNode.BuiltInFunction(name= org.apache.phoenix.expression.function.gio.JsonStrGetValueFunction.NAME, args={
         @FunctionParseNode.Argument(allowedTypes={ PVarchar.class }),
         @FunctionParseNode.Argument(allowedTypes={ PVarchar.class })} )
 public class JsonStrGetValueFunction extends ScalarFunction {
