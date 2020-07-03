@@ -34,17 +34,32 @@ public class JsonStrGetValueFunction extends ScalarFunction {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         List<Expression> childs = getStringExpression();
-        for(Expression child: childs) {
-            if (!child.evaluate(tuple, ptr)) {
+//        for(Expression child: childs) {
+//            if (!child.evaluate(tuple, ptr)) {
+//                return false;
+//            }
+//            if (ptr.getLength() == 0) {
+//                ptr.set(ByteUtil.EMPTY_BYTE_ARRAY);
+//                return true;
+//            }
+//        }
+        String sourceStr = null;
+        String key = null;
+        for (int i = 0; i < childs.size(); i++) {
+            if (!childs.get(i).evaluate(tuple, ptr)) {
                 return false;
             }
             if (ptr.getLength() == 0) {
                 ptr.set(ByteUtil.EMPTY_BYTE_ARRAY);
                 return true;
             }
+            switch (i) {
+                case 0 :
+                    sourceStr = (String) PVarchar.INSTANCE.toObject(ptr, getStringExpression().get(0).getSortOrder());
+                case 1 :
+                    key = (String) PVarchar.INSTANCE.toObject(ptr, getStringExpression().get(0).getSortOrder());
+            }
         }
-        String sourceStr = (String) PVarchar.INSTANCE.toObject(ptr, getStringExpression().get(0).getSortOrder());
-        String key = (String) PVarchar.INSTANCE.toObject(ptr, getStringExpression().get(1).getSortOrder());
         try {
             Map<String, String> jsonNode = new ObjectMapper().readValue(sourceStr, new TypeReference<Map<String, String>>() {});
             String orDefault = jsonNode.get(key);
