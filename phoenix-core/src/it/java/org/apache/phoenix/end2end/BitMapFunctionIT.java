@@ -35,10 +35,10 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         conn = DriverManager.getConnection(getUrl(), props);
         conn.setAutoCommit(false);
 
-//        createRbmTable();
-//        createBucketBmTable();
+        createRbmTable();
+        createBucketBmTable();
         createBucketBmTableForMerge();
-//        createCbmTable();
+        createCbmTable();
     }
 
     @After
