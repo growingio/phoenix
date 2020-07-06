@@ -35,10 +35,10 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         conn = DriverManager.getConnection(getUrl(), props);
         conn.setAutoCommit(false);
 
-        createRbmTable();
-        createBucketBmTable();
+//        createRbmTable();
+//        createBucketBmTable();
         createBucketBmTableForMerge();
-        createCbmTable();
+//        createCbmTable();
     }
 
     @After
@@ -430,8 +430,8 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         ResultSet rs = stmt.executeQuery(query);
         while (rs.next()) {
             BucketBitMap bbm = new BucketBitMap(rs.getBytes(1));
-            assertNotEquals(bbm.getContainer().keySet().toArray().length, 7, 0);
-            assertEquals(bbm.getCount(), 2, 0);
+            assertEquals(bbm.getContainer().keySet().toArray().length, 7, 0);
+            assertEquals(bbm.getCount(), 4, 0);
         }
 
         // 一条数据时，server aggregator 不进行序列化和反序列
@@ -440,7 +440,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         ResultSet rs2 = stmt2.executeQuery(query2);
         while (rs2.next()) {
             BucketBitMap bbm = new BucketBitMap(rs2.getBytes(1));
-            assertEquals(bbm.getCount(), 1, 0);
+            assertEquals(bbm.getCount(), 3, 0);
         }
     }
 
