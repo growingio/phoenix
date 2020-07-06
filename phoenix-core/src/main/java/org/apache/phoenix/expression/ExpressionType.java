@@ -36,6 +36,7 @@ import org.apache.phoenix.expression.function.gio.*;
  */
 // Important : When you want to add new Types make sure to add those towards the end, not changing the existing type's
 // ordinal
+// 翻译一下: 新加的函数写最后，别写中间！！！否则新旧版本同时不兼容
 public enum ExpressionType {
     ReverseFunction(ReverseFunction.class),
     RowKey(RowKeyColumnExpression.class),
@@ -95,7 +96,6 @@ public enum ExpressionType {
     UpperFunction(UpperFunction.class),
     LowerFunction(LowerFunction.class),
     TrimFunction(TrimFunction.class),
-    JsonStrGetValueFunction(JsonStrGetValueFunction.class),
     DistinctCountAggregateFunction(DistinctCountAggregateFunction.class),
     PercentileContAggregateFunction(PercentileContAggregateFunction.class),
     PercentRankAggregateFunction(PercentRankAggregateFunction.class),
@@ -215,11 +215,12 @@ public enum ExpressionType {
     TransactionProviderNameFunction(TransactionProviderNameFunction.class),
     StringMergeFunction(StringMergeFunction.class),
     BucketBitMapMergeFunction2(BucketBitMapMergeFunction2.class),
-    BucketBitMapMergeFunction3(BucketBitMapMergeFunction3.class),
     CBitMapMergeFunction2(CBitMapMergeFunction2.class),
-    CBitMapMergeFunction3(CBitMapMergeFunction3.class),
     SBitMapMergeFunction2(SBitMapMergeFunction2.class),
-    SBitMapMergeFunction3(SBitMapMergeFunction3.class)
+    BucketBitMapMergeFunction3(BucketBitMapMergeFunction3.class),
+    CBitMapMergeFunction3(CBitMapMergeFunction3.class),
+    SBitMapMergeFunction3(SBitMapMergeFunction3.class),
+    JsonStrGetValueFunction(JsonStrGetValueFunction.class)
     ;
 
     ExpressionType(Class<? extends Expression> clazz) {
