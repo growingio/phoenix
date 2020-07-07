@@ -13,6 +13,7 @@ package org.apache.phoenix.end2end;
 import io.growing.bitmap.BucketBitMap;
 import io.growing.bitmap.CBitMap;
 import io.growing.bitmap.RoaringBitmap;
+import io.growing.bitmap.SBitMap;
 import org.apache.phoenix.util.PropertiesUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -39,6 +40,7 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         createBucketBmTable();
         createBucketBmTableForMerge();
         createCbmTable();
+        createSbmTable();
     }
 
     @After
@@ -235,6 +237,53 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         prepareStmt2.close();
 
         String upsert3 = "upsert into test_cbm3 values (?,?)";
+        PreparedStatement prepareStmt3 = conn.prepareStatement(upsert3);
+        prepareStmt3.setInt(1, 1);
+        prepareStmt3.setBytes(2, null);
+        prepareStmt3.addBatch();
+        prepareStmt3.executeBatch();
+        prepareStmt3.close();
+
+        conn.commit();
+    }
+
+    private void createSbmTable() throws SQLException, IOException {
+        Statement stmt = conn.createStatement();
+
+        // create table
+        String create1 = "CREATE TABLE test_sbm1 (id INTEGER PRIMARY KEY, bm VARBINARY)";
+        String create2 = "CREATE TABLE test_sbm2 (id INTEGER PRIMARY KEY, bm VARBINARY)";
+        String create3 = "CREATE TABLE test_sbm3 (id INTEGER PRIMARY KEY, bm VARBINARY)";
+        stmt.addBatch(create1);
+        stmt.addBatch(create2);
+        stmt.addBatch(create3);
+        stmt.executeBatch();
+        stmt.close();
+
+        // insert data
+        String upsert1 = "upsert into test_sbm1 values (?,?)";
+        PreparedStatement prepareStmt1 = conn.prepareStatement(upsert1);
+        prepareStmt1.setInt(1, 1);
+        SBitMap sbm1 = new SBitMap();
+        sbm1.add(5, (short) 3, 3);
+        sbm1.add(6, (short) 5, 9);
+        prepareStmt1.setBytes(2, sbm1.getBytes());
+        prepareStmt1.addBatch();
+        prepareStmt1.executeBatch();
+        prepareStmt1.close();
+
+        String upsert2 = "upsert into test_sbm2 values (?,?)";
+        PreparedStatement prepareStmt2 = conn.prepareStatement(upsert2);
+        prepareStmt2.setInt(1, 1);
+        SBitMap sbm2 = new SBitMap();
+        sbm2.add(3, (short) 2, 7);
+        sbm2.add(2, (short) 4, 8);
+        prepareStmt2.setBytes(2, sbm2.getBytes());
+        prepareStmt2.addBatch();
+        prepareStmt2.executeBatch();
+        prepareStmt2.close();
+
+        String upsert3 = "upsert into test_sbm3 values (?,?)";
         PreparedStatement prepareStmt3 = conn.prepareStatement(upsert3);
         prepareStmt3.setInt(1, 1);
         prepareStmt3.setBytes(2, null);
@@ -488,6 +537,29 @@ public class BitMapFunctionIT extends BaseHBaseManagedTimeIT {
         while (rs2.next()) {
             CBitMap cbm = new CBitMap(rs2.getBytes(1));
             assertEquals(cbm.getCount(), 5, 0);
+        }
+    }
+
+    @Test
+    public void testSBitMapMerge3() throws Exception {
+        String query = "select sbitmap_merge3(bm, rid, 2) " +
+                "from " +
+                "(select bm,0 rid from test_sbm1 " +
+                "union all " +
+                "select bm,1 rid from test_sbm2)";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            SBitMap sbm = new SBitMap(rs.getBytes(1));
+            assertEquals(sbm.getCount(), 4, 0);
+        }
+
+        String query2 = "select sbitmap_merge3(bm, 0, 1) from test_sbm1";
+        Statement stmt2 = conn.createStatement();
+        ResultSet rs2 = stmt2.executeQuery(query2);
+        while (rs2.next()) {
+            SBitMap sbm = new SBitMap(rs2.getBytes(1));
+            assertEquals(sbm.getCount(), 2, 0);
         }
     }
 
