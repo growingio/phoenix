@@ -6,12 +6,10 @@ import org.apache.phoenix.expression.Expression;
 import org.apache.phoenix.expression.LiteralExpression;
 import org.apache.phoenix.expression.aggregator.Aggregator;
 import org.apache.phoenix.expression.aggregator.gio.SBitMapMergeAggregator;
-import org.apache.phoenix.expression.aggregator.gio.SBitMapMergeAggregator2;
 import org.apache.phoenix.expression.aggregator.gio.SBitMapMergeAggregator3;
 import org.apache.phoenix.expression.function.CountAggregateFunction;
 import org.apache.phoenix.expression.function.DelegateConstantToCountAggregateFunction;
 import org.apache.phoenix.parse.FunctionParseNode;
-import org.apache.phoenix.parse.gio.SBitMapMergeAggregateParseNode2;
 import org.apache.phoenix.parse.gio.SBitMapMergeAggregateParseNode3;
 import org.apache.phoenix.schema.SortOrder;
 import org.apache.phoenix.schema.tuple.Tuple;
@@ -29,6 +27,7 @@ import java.util.List;
 @FunctionParseNode.BuiltInFunction(name = SBitMapMergeFunction3.NAME,
         nodeClass = SBitMapMergeAggregateParseNode3.class,
         args = {@FunctionParseNode.Argument(allowedTypes = {PVarbinary.class}),
+                @FunctionParseNode.Argument(allowedTypes = {PInteger.class}),
                 @FunctionParseNode.Argument(allowedTypes = {PInteger.class})})
 public class SBitMapMergeFunction3 extends DelegateConstantToCountAggregateFunction {
     public static final String NAME = "SBITMAP_MERGE3";
