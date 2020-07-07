@@ -80,4 +80,19 @@ public class JsonStrGetValueFunctionIT extends BaseHBaseManagedTimeIT {
         }
     }
 
+    @Test
+    public void testJSONGetNull() throws SQLException {
+        String query = "select json_get_value('{}', 'test_guanggao_weidu'), json_get_value(utm_var, 'ads_link') " +
+                "from test_rbm1";
+
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        while(rs.next()) {
+            String json1 = rs.getString(1);
+            String json2 = rs.getString(2);
+            assertEquals(null, json1);
+            assertEquals("acavasg", json2);
+        }
+    }
+
 }

@@ -9,7 +9,6 @@ import org.apache.phoenix.schema.types.*;
 import org.apache.phoenix.util.ByteUtil;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -34,15 +33,6 @@ public class JsonStrGetValueFunction extends ScalarFunction {
     @Override
     public boolean evaluate(Tuple tuple, ImmutableBytesWritable ptr) {
         List<Expression> childs = getStringExpression();
-//        for(Expression child: childs) {
-//            if (!child.evaluate(tuple, ptr)) {
-//                return false;
-//            }
-//            if (ptr.getLength() == 0) {
-//                ptr.set(ByteUtil.EMPTY_BYTE_ARRAY);
-//                return true;
-//            }
-//        }
         String sourceStr = null;
         String key = null;
         for (int i = 0; i < childs.size(); i++) {
@@ -62,8 +52,8 @@ public class JsonStrGetValueFunction extends ScalarFunction {
         }
         try {
             Map<String, String> jsonNode = new ObjectMapper().readValue(sourceStr, new TypeReference<Map<String, String>>() {});
-            String orDefault = jsonNode.get(key);
-            ptr.set(orDefault.getBytes());
+            byte[] orDefault = jsonNode.get(key) != null ? jsonNode.get(key).getBytes() : ByteUtil.EMPTY_BYTE_ARRAY;
+            ptr.set(orDefault);
         } catch (IOException e) {
             return false;
         }
