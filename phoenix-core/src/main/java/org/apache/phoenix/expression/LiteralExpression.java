@@ -26,7 +26,8 @@ import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.phoenix.expression.visitor.ExpressionVisitor;
-import org.apache.phoenix.schema.IllegalDataException;
+import org.apache.phoenix.schema.ConstraintViolationException;
+import org.apache.phoenix.schema.PColumn;
 import org.apache.phoenix.schema.SortOrder;
 import org.apache.phoenix.schema.TypeMismatchException;
 import org.apache.phoenix.schema.tuple.Tuple;
@@ -156,11 +157,15 @@ public class LiteralExpression extends BaseTerminalExpression {
     public static LiteralExpression newConstant(Object value, PDataType type, SortOrder sortOrder) throws SQLException {
         return newConstant(value, type, null, null, sortOrder, Determinism.ALWAYS);
     }
-    
+
+    public static LiteralExpression newConstant(Object value, PColumn column, Determinism determinism) throws SQLException {
+        return newConstant(value, column.getDataType(), null, null, column.getSortOrder(), determinism, true, column.getName().getString());
+    }
+
     public static LiteralExpression newConstant(Object value, PDataType type, SortOrder sortOrder, Determinism determinism) throws SQLException {
         return newConstant(value, type, null, null, sortOrder, determinism);
     }
-    
+
     public static LiteralExpression newConstant(Object value, PDataType type, Integer maxLength, Integer scale) throws SQLException {
         return newConstant(value, type, maxLength, scale, SortOrder.getDefault(), Determinism.ALWAYS);
     }
@@ -171,11 +176,16 @@ public class LiteralExpression extends BaseTerminalExpression {
 
     public static LiteralExpression newConstant(Object value, PDataType type, Integer maxLength, Integer scale, SortOrder sortOrder, Determinism determinism) 
             throws SQLException {
-        return newConstant(value, type, maxLength, scale, sortOrder, determinism, true);
+        return newConstant(value, type, maxLength, scale, sortOrder, determinism, true, null);
     }
-    
-    // TODO: cache?
+
     public static LiteralExpression newConstant(Object value, PDataType type, Integer maxLength, Integer scale, SortOrder sortOrder, Determinism determinism, boolean rowKeyOrderOptimizable)
+            throws SQLException {
+        return newConstant(value, type, maxLength, scale, sortOrder, determinism, rowKeyOrderOptimizable, null);
+    }
+
+    // TODO: cache?
+    public static LiteralExpression newConstant(Object value, PDataType type, Integer maxLength, Integer scale, SortOrder sortOrder, Determinism determinism, boolean rowKeyOrderOptimizable, String columnName)
             throws SQLException {
         if (value == null) {
             return  (type == null) ?  getNullLiteralExpression(determinism) : getTypedNullLiteralExpression(type, determinism);
@@ -186,8 +196,12 @@ public class LiteralExpression extends BaseTerminalExpression {
         PDataType actualType = PDataType.fromLiteral(value);
         try {
             value = type.toObject(value, actualType);
-        } catch (IllegalDataException e) {
-            throw TypeMismatchException.newException(type, actualType, value.toString());
+        } catch (ConstraintViolationException e) {
+            String message = value.toString();
+            if (columnName != null) {
+                message +=  " for column " + columnName;
+            }
+            throw TypeMismatchException.newException(type, actualType, message);
         }
         byte[] b = type.isArrayType() ? ((PArrayDataType)type).toBytes(value, PArrayDataType.arrayBaseType(type), sortOrder, rowKeyOrderOptimizable) :
                 type.toBytes(value, sortOrder);
