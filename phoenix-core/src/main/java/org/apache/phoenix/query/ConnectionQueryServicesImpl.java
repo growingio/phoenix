@@ -424,7 +424,7 @@ public class ConnectionQueryServicesImpl extends DelegateQueryServices implement
         try {
             this.connection = HBaseFactoryProvider.getHConnectionFactory().createConnection(this.config);
             GLOBAL_HCONNECTIONS_COUNTER.increment();
-            logger.info("HConnection established. Stacktrace for informational purposes: " + connection + " " +  LogUtil.getCallerStackTrace());
+            logger.info("HConnection established. Stacktrace for informational purposes: " + connection);
         } catch (IOException e) {
             throw new SQLExceptionInfo.Builder(SQLExceptionCode.CANNOT_ESTABLISH_CONNECTION)
             .setRootCause(e).build().buildException();
