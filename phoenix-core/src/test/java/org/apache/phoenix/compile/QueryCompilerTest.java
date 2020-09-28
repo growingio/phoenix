@@ -2482,7 +2482,7 @@ public class QueryCompilerTest extends BaseConnectionlessQueryTest {
             assertTrue(rowProj.getColumnProjector(2).getExpression().getMaxLength() == 30);
             assertTrue(rowProj.getColumnProjector(3).getExpression().getDataType()
                 instanceof PDecimal);
-            assertTrue(rowProj.getColumnProjector(3).getExpression().getScale() == 2);
+            assertTrue(rowProj.getColumnProjector(3).getExpression().getScale() == null);
         } finally {
             conn.close();
         }
