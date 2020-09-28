@@ -216,12 +216,13 @@ public class OrderedResultIterator implements PeekingResultIterator {
                 @Override
                 public Tuple next() throws SQLException {
                     ResultEntry entry = queueEntries.poll();
+                    count++;
                     while (entry != null && offset != null && count < offset) {
-                        count++;
                         if (entry.getResult() == null) { return null; }
                         entry = queueEntries.poll();
+                        count++;
                     }
-                    if (entry == null || (limit != null && count++ > limit)) {
+                    if (entry == null || (limit != null && count > limit)) {
                         resultIterator.close();
                         resultIterator = PeekingResultIterator.EMPTY_ITERATOR;
                         return null;
